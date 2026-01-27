@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة السيارات</title>
+    <title>Car Management System</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- استخدام الإصدار الكامل من Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -30,6 +30,7 @@
         body {
             background-color: #f8fafc;
             min-height: 100vh;
+            font-family: 'Noto Sans Arabic', Arial, sans-serif;
         }
 
         .container {
@@ -95,6 +96,7 @@
             font-size: 16px;
             transition: border-color 0.3s;
             direction: ltr;
+            font-family: Arial, sans-serif;
         }
 
         .input-group input:focus {
@@ -161,7 +163,8 @@
             font-weight: 500;
             direction: ltr;
             text-align: left;
-            font-family: monospace;
+            font-family: Arial, sans-serif;
+            font-variant-numeric: tabular-nums;
         }
 
         .user-info {
@@ -172,6 +175,7 @@
 
         .user-name {
             font-weight: 600;
+            font-family: Arial, sans-serif;
         }
 
         .logout-btn {
@@ -183,6 +187,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
+            font-family: Arial, sans-serif;
         }
 
         .logout-btn:hover {
@@ -220,6 +225,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-family: Arial, sans-serif;
         }
 
         .add-car-btn:hover {
@@ -229,6 +235,7 @@
         .cars-count {
             color: var(--gray);
             font-size: 16px;
+            font-family: Arial, sans-serif;
         }
 
         /* بطاقات السيارات - أكورديون */
@@ -273,8 +280,11 @@
             padding: 6px 12px;
             border-radius: 6px;
             font-weight: 600;
-            min-width: 100px;
+            min-width: 120px;
             text-align: center;
+            font-family: Arial, monospace;
+            font-size: 14px;
+            direction: ltr;
         }
 
         .car-info {
@@ -285,6 +295,7 @@
 
         .car-info span {
             color: var(--gray);
+            font-family: Arial, sans-serif;
         }
 
         .car-chevron {
@@ -339,6 +350,8 @@
             border: 1px solid #e5e7eb;
             border-radius: 6px;
             min-height: 40px;
+            font-family: Arial, sans-serif;
+            direction: ltr;
         }
 
         .warning-badge {
@@ -349,6 +362,8 @@
             font-size: 12px;
             font-weight: 600;
             margin-right: 8px;
+            font-family: Arial, sans-serif;
+            direction: ltr;
         }
 
         .expired-badge {
@@ -359,6 +374,8 @@
             font-size: 12px;
             font-weight: 600;
             margin-right: 8px;
+            font-family: Arial, sans-serif;
+            direction: ltr;
         }
 
         /* أزرار البطاقة */
@@ -380,6 +397,7 @@
             transition: all 0.3s;
             min-width: 100px;
             text-align: center;
+            font-family: Arial, sans-serif;
         }
 
         .edit-btn {
@@ -485,6 +503,7 @@
             font-size: 16px;
             transition: border-color 0.3s;
             direction: ltr;
+            font-family: Arial, sans-serif;
         }
 
         .form-group textarea {
@@ -517,6 +536,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            font-family: Arial, sans-serif;
         }
 
         .cancel-btn {
@@ -528,6 +548,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            font-family: Arial, sans-serif;
         }
 
         /* تنبيهات */
@@ -582,6 +603,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            font-family: Arial, sans-serif;
         }
 
         .cancel-alert-btn {
@@ -593,6 +615,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            font-family: Arial, sans-serif;
         }
 
         /* الطباعة */
@@ -661,6 +684,16 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* التأكد من أن جميع الأرقام إنجليزية */
+        input[type="number"],
+        input[type="tel"],
+        .english-numbers {
+            font-family: Arial, sans-serif !important;
+            font-feature-settings: "tnum";
+            -moz-font-feature-settings: "tnum";
+            -webkit-font-feature-settings: "tnum";
+        }
     </style>
 </head>
 <body>
@@ -670,15 +703,15 @@
             <div class="logo-text">AL MASAOOD</div>
             <form class="login-form" id="loginForm">
                 <div class="input-group">
-                    <label for="email">البريد الإلكتروني</label>
+                    <label for="email">Email</label>
                     <input type="email" id="email" required placeholder="example@email.com" dir="ltr">
                 </div>
                 <div class="input-group">
-                    <label for="password">كلمة المرور</label>
+                    <label for="password">Password</label>
                     <input type="password" id="password" required placeholder="••••••••" dir="ltr">
                 </div>
                 <button type="submit" class="login-btn" id="loginBtn">
-                    <span id="loginText">تسجيل الدخول</span>
+                    <span id="loginText">Login</span>
                     <span id="loginLoader" class="loading" style="display: none;"></span>
                 </button>
                 <div class="error-message" id="loginError"></div>
@@ -692,21 +725,21 @@
             <div class="datetime-display" id="datetime"></div>
             <div class="user-info">
                 <span class="user-name" id="userName"></span>
-                <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
             </div>
         </div>
 
         <div class="container">
             <div class="content">
-                <h1 class="page-title">نظام إدارة السيارات</h1>
+                <h1 class="page-title">Car Management System</h1>
                 
                 <div class="actions-bar">
-                    <button class="add-car-btn" id="addCarBtn">+ إضافة سيارة جديدة</button>
-                    <div class="cars-count" id="carsCount">0 سيارة</div>
+                    <button class="add-car-btn" id="addCarBtn">+ Add New Car</button>
+                    <div class="cars-count" id="carsCount">0 cars</div>
                 </div>
 
                 <div class="cars-container" id="carsContainer">
-                    <!-- ستتم إضافة بطاقات السيارات هنا -->
+                    <!-- سيتم إضافة بطاقات السيارات هنا -->
                 </div>
             </div>
         </div>
@@ -716,86 +749,80 @@
     <div class="modal-overlay" id="carModal">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">إضافة سيارة جديدة</h2>
+                <h2 class="modal-title" id="modalTitle">Add New Car</h2>
                 <button class="close-modal" id="closeModal">×</button>
             </div>
             <form id="carForm">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="carId">رقم السيارة (ID)*</label>
-                        <input type="text" id="carId" required maxlength="50" dir="ltr">
-                        <small style="color: var(--gray); font-size: 12px;">رقم فريد لا يتكرر ولا يمكن إعادة استخدامه بعد الحذف</small>
+                        <label for="licensePlate">License Plate Number* (Numbers only)</label>
+                        <input type="text" id="licensePlate" required pattern="[0-9]+" maxlength="20" dir="ltr" placeholder="12344">
                     </div>
 
                     <div class="form-group">
-                        <label for="licensePlate">رقم اللوحة (أرقام فقط)*</label>
-                        <input type="text" id="licensePlate" required pattern="[0-9]+" maxlength="20" dir="ltr">
+                        <label for="plateCode">Plate Code (Numbers/Letters)</label>
+                        <input type="text" id="plateCode" maxlength="20" dir="ltr" placeholder="10 ABC">
                     </div>
 
                     <div class="form-group">
-                        <label for="plateCode">رمز اللوحة (أرقام/حروف)</label>
-                        <input type="text" id="plateCode" maxlength="20" dir="ltr">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="emirate">الإمارة</label>
+                        <label for="emirate">Emirate</label>
                         <select id="emirate">
-                            <option value="">اختر الإمارة</option>
-                            <option value="أبوظبي">أبوظبي</option>
-                            <option value="دبي">دبي</option>
-                            <option value="الشارقة">الشارقة</option>
-                            <option value="عجمان">عجمان</option>
-                            <option value="أم القيوين">أم القيوين</option>
-                            <option value="رأس الخيمة">رأس الخيمة</option>
-                            <option value="الفجيرة">الفجيرة</option>
-                            <option value="other">أخرى</option>
+                            <option value="">Select Emirate</option>
+                            <option value="Abu Dhabi">Abu Dhabi</option>
+                            <option value="Dubai">Dubai</option>
+                            <option value="Sharjah">Sharjah</option>
+                            <option value="Ajman">Ajman</option>
+                            <option value="Umm Al Quwain">Umm Al Quwain</option>
+                            <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                            <option value="Fujairah">Fujairah</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
 
                     <div class="form-group" id="otherEmirateGroup" style="display: none;">
-                        <label for="otherEmirate">اسم الإمارة (يدوي)</label>
+                        <label for="otherEmirate">Emirate Name (Manual)</label>
                         <input type="text" id="otherEmirate" maxlength="50">
                     </div>
 
                     <div class="form-group">
-                        <label for="owner">المالك*</label>
+                        <label for="owner">Owner*</label>
                         <input type="text" id="owner" required maxlength="100">
                     </div>
 
                     <div class="form-group">
-                        <label for="user">المستخدم (اختياري)</label>
+                        <label for="user">User (Optional)</label>
                         <input type="text" id="user" maxlength="100">
                     </div>
 
                     <div class="form-group">
-                        <label for="type">النوع (ماركة السيارة)*</label>
-                        <input type="text" id="type" required maxlength="50">
+                        <label for="type">Type (Car Brand)*</label>
+                        <input type="text" id="type" required maxlength="50" placeholder="Nissan, Mercedes, etc.">
                     </div>
 
                     <div class="form-group">
-                        <label for="manufactureYear">سنة الصنع*</label>
-                        <input type="number" id="manufactureYear" required min="1900" max="2100" dir="ltr">
+                        <label for="manufactureYear">Manufacture Year*</label>
+                        <input type="number" id="manufactureYear" required min="1900" max="2100" dir="ltr" placeholder="2026">
                     </div>
 
                     <div class="form-group">
-                        <label for="insuranceExpiry">تاريخ انتهاء التأمين*</label>
+                        <label for="insuranceExpiry">Insurance Expiry Date*</label>
                         <input type="date" id="insuranceExpiry" required dir="ltr">
                     </div>
 
                     <div class="form-group">
-                        <label for="licenseExpiry">تاريخ انتهاء الترخيص*</label>
+                        <label for="licenseExpiry">License Expiry Date*</label>
                         <input type="date" id="licenseExpiry" required dir="ltr">
                     </div>
 
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label for="notes">ملاحظات</label>
-                        <textarea id="notes" maxlength="500"></textarea>
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" maxlength="500" placeholder="Any additional notes..."></textarea>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="cancel-btn" id="cancelForm">إلغاء</button>
-                    <button type="submit" class="save-btn" id="saveBtn">حفظ</button>
+                    <button type="button" class="cancel-btn" id="cancelForm">Cancel</button>
+                    <button type="submit" class="save-btn" id="saveBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -804,11 +831,11 @@
     <!-- نافذة تأكيد الحذف -->
     <div class="alert-overlay" id="deleteAlert">
         <div class="alert-box">
-            <h3 class="alert-title">⚠️ تأكيد الحذف</h3>
-            <p class="alert-message" id="deleteMessage">هل أنت متأكد من رغبتك في حذف هذه السيارة؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <h3 class="alert-title">⚠️ Confirm Delete</h3>
+            <p class="alert-message" id="deleteMessage">Are you sure you want to delete this car? This action cannot be undone.</p>
             <div class="alert-actions">
-                <button class="cancel-alert-btn" id="cancelDelete">إلغاء</button>
-                <button class="confirm-btn" id="confirmDelete">تأكيد الحذف</button>
+                <button class="cancel-alert-btn" id="cancelDelete">Cancel</button>
+                <button class="confirm-btn" id="confirmDelete">Confirm Delete</button>
             </div>
         </div>
     </div>
@@ -827,7 +854,7 @@
 
         // التحقق من تحميل Firebase
         if (typeof firebase === 'undefined') {
-            document.getElementById('loginError').textContent = 'خطأ: لم يتم تحميل مكتبة Firebase. يرجى تحديث الصفحة.';
+            document.getElementById('loginError').textContent = 'Error: Firebase library not loaded. Please refresh the page.';
             document.getElementById('loginBtn').disabled = true;
         } else {
             // Initialize Firebase
@@ -867,20 +894,27 @@
             const emirateSelect = document.getElementById('emirate');
             const otherEmirateGroup = document.getElementById('otherEmirateGroup');
 
-            // تحديث التاريخ والوقت
+            // تحديث التاريخ والوقت باللغة الإنجليزية
             function updateDateTime() {
                 const now = new Date();
-                const options = {
+                const dateOptions = {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
-                    day: 'numeric',
+                    day: 'numeric'
+                };
+                
+                const timeOptions = {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: false
                 };
-                datetimeDisplay.textContent = now.toLocaleDateString('en-US', options);
+                
+                const dateStr = now.toLocaleDateString('en-US', dateOptions);
+                const timeStr = now.toLocaleTimeString('en-US', timeOptions);
+                
+                datetimeDisplay.textContent = `${dateStr} - ${timeStr}`;
             }
 
             // التحقق من تاريخ الصلاحية
@@ -895,6 +929,15 @@
                     return { status: 'warning', days: daysDiff };
                 }
                 return { status: 'valid', days: daysDiff };
+            }
+
+            // تنسيق التاريخ إلى YYYY-MM-DD
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
             }
 
             // إنشاء بطاقة سيارة
@@ -912,18 +955,19 @@
                 const title = document.createElement('div');
                 title.className = 'car-title';
                 
+                // عرض أول 8 أحرف من المعرف التلقائي
                 const carId = document.createElement('div');
                 carId.className = 'car-id';
-                carId.textContent = car.carId;
+                carId.textContent = `ID: ${car.id.substring(0, 8)}...`;
                 
                 const info = document.createElement('div');
                 info.className = 'car-info';
                 
                 const plateSpan = document.createElement('span');
-                plateSpan.textContent = `رقم اللوحة: ${car.licensePlate}`;
+                plateSpan.textContent = `Plate: ${car.licensePlate}`;
                 
                 const ownerSpan = document.createElement('span');
-                ownerSpan.textContent = `المالك: ${car.owner}`;
+                ownerSpan.textContent = `Owner: ${car.owner}`;
                 
                 info.appendChild(plateSpan);
                 info.appendChild(ownerSpan);
@@ -946,19 +990,20 @@
                 
                 // تفاصيل السيارة
                 const detailsData = [
-                    { label: 'رمز اللوحة', value: car.plateCode || 'غير محدد' },
-                    { label: 'الإمارة', value: car.emirate || 'غير محدد' },
-                    { label: 'المستخدم', value: car.user || 'غير محدد' },
-                    { label: 'النوع', value: car.type },
-                    { label: 'سنة الصنع', value: car.manufactureYear },
+                    { label: 'Auto ID', value: car.id },
+                    { label: 'Plate Code', value: car.plateCode || 'Not specified' },
+                    { label: 'Emirate', value: car.emirate || 'Not specified' },
+                    { label: 'User', value: car.user || 'Not specified' },
+                    { label: 'Type', value: car.type },
+                    { label: 'Year', value: car.manufactureYear },
                     { 
-                        label: 'انتهاء التأمين', 
-                        value: new Date(car.insuranceExpiry).toLocaleDateString('ar-EG'),
+                        label: 'Insurance Expiry', 
+                        value: formatDate(car.insuranceExpiry),
                         status: insuranceStatus 
                     },
                     { 
-                        label: 'انتهاء الترخيص', 
-                        value: new Date(car.licenseExpiry).toLocaleDateString('ar-EG'),
+                        label: 'License Expiry', 
+                        value: formatDate(car.licenseExpiry),
                         status: licenseStatus 
                     }
                 ];
@@ -978,11 +1023,11 @@
                         const statusSpan = document.createElement('span');
                         if (item.status.status === 'expired') {
                             statusSpan.className = 'expired-badge';
-                            statusSpan.textContent = `منتهي منذ ${item.status.days} يوم`;
+                            statusSpan.textContent = `Expired ${item.status.days} days ago`;
                             value.appendChild(statusSpan);
                         } else if (item.status.status === 'warning') {
                             statusSpan.className = 'warning-badge';
-                            statusSpan.textContent = `ينتهي بعد ${item.status.days} يوم`;
+                            statusSpan.textContent = `Expires in ${item.status.days} days`;
                             value.appendChild(statusSpan);
                         }
                     }
@@ -1003,7 +1048,7 @@
                     
                     const notesLabel = document.createElement('div');
                     notesLabel.className = 'detail-label';
-                    notesLabel.textContent = 'ملاحظات';
+                    notesLabel.textContent = 'Notes';
                     
                     const notesValue = document.createElement('div');
                     notesValue.className = 'detail-value';
@@ -1022,17 +1067,17 @@
                 
                 const editBtn = document.createElement('button');
                 editBtn.className = 'action-btn edit-btn';
-                editBtn.textContent = 'تعديل';
+                editBtn.textContent = 'Edit';
                 editBtn.onclick = () => editCar(car);
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'action-btn delete-btn';
-                deleteBtn.textContent = 'حذف';
+                deleteBtn.textContent = 'Delete';
                 deleteBtn.onclick = () => showDeleteAlert(car);
                 
                 const printBtn = document.createElement('button');
                 printBtn.className = 'action-btn print-btn';
-                printBtn.textContent = 'طباعة';
+                printBtn.textContent = 'Print';
                 printBtn.onclick = () => printCar(car);
                 
                 actions.appendChild(editBtn);
@@ -1059,14 +1104,14 @@
                     const card = createCarCard(car);
                     carsContainer.appendChild(card);
                 });
-                carsCount.textContent = `${cars.length} سيارة`;
+                carsCount.textContent = `${cars.length} cars`;
             }
 
             // جلب السيارات من قاعدة البيانات
             function fetchCars() {
                 if (!currentUser) return;
                 
-                // جلب جميع السيارات بدون شرط userId (للتجربة)
+                // جلب جميع السيارات (سيتم إضافة فلترة بالمستخدم لاحقاً)
                 db.collection('cars')
                     .orderBy('createdAt', 'desc')
                     .onSnapshot(snapshot => {
@@ -1074,22 +1119,21 @@
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             
-                            // تحويل البيانات القديمة إلى التنسيق الجديد
+                            // تحويل البيانات القديمة والجديدة
                             const car = {
-                                id: doc.id,
-                                carId: data.carId || 'غير محدد',
-                                licensePlate: data.plate || data.licensePlate || 'غير محدد',
+                                id: doc.id, // المعرف التلقائي من Firebase
+                                licensePlate: data.plate || data.licensePlate || 'Not specified',
                                 plateCode: data.plateCode || '',
                                 emirate: data.emirate || '',
-                                owner: data.owner || 'غير محدد',
+                                owner: data.owner || 'Not specified',
                                 user: data.user || '',
-                                type: data.type || 'غير محدد',
-                                manufactureYear: data.year || data.manufactureYear || 'غير محدد',
+                                type: data.type || 'Not specified',
+                                manufactureYear: data.year || data.manufactureYear || 'Not specified',
                                 notes: data.notes || '',
-                                // التعامل مع التواريخ القديمة والجديدة
                                 insuranceExpiry: data.insuranceEnd || data.insuranceExpiry || new Date().toISOString(),
                                 licenseExpiry: data.licenseEnd || data.licenseExpiry || new Date().toISOString(),
-                                userId: data.userId || 'unknown'
+                                userId: data.userId || 'unknown',
+                                createdAt: data.createdAt || new Date().toISOString()
                             };
                             
                             cars.push(car);
@@ -1103,11 +1147,9 @@
             // عرض نموذج إضافة/تعديل سيارة
             function showCarForm(car = null) {
                 editCarId = car ? car.id : null;
-                modalTitle.textContent = car ? 'تعديل سيارة' : 'إضافة سيارة جديدة';
+                modalTitle.textContent = car ? 'Edit Car' : 'Add New Car';
                 
                 if (car) {
-                    document.getElementById('carId').value = car.carId;
-                    document.getElementById('carId').disabled = true;
                     document.getElementById('licensePlate').value = car.licensePlate;
                     document.getElementById('plateCode').value = car.plateCode || '';
                     document.getElementById('emirate').value = car.emirate || '';
@@ -1117,29 +1159,25 @@
                     document.getElementById('manufactureYear').value = car.manufactureYear;
                     
                     // تحويل التواريخ إلى تنسيق YYYY-MM-DD
-                    const insuranceDate = new Date(car.insuranceExpiry);
-                    const licenseDate = new Date(car.licenseExpiry);
-                    
-                    document.getElementById('insuranceExpiry').value = insuranceDate.toISOString().split('T')[0];
-                    document.getElementById('licenseExpiry').value = licenseDate.toISOString().split('T')[0];
+                    document.getElementById('insuranceExpiry').value = formatDate(car.insuranceExpiry);
+                    document.getElementById('licenseExpiry').value = formatDate(car.licenseExpiry);
                     document.getElementById('notes').value = car.notes || '';
                     
-                    if (car.emirate && !['أبوظبي', 'دبي', 'الشارقة', 'عجمان', 'أم القيوين', 'رأس الخيمة', 'الفجيرة'].includes(car.emirate)) {
+                    if (car.emirate && !['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Ras Al Khaimah', 'Fujairah'].includes(car.emirate)) {
                         document.getElementById('emirate').value = 'other';
                         document.getElementById('otherEmirate').value = car.emirate;
                         otherEmirateGroup.style.display = 'block';
                     }
                 } else {
                     document.getElementById('carForm').reset();
-                    document.getElementById('carId').disabled = false;
                     otherEmirateGroup.style.display = 'none';
                     document.getElementById('emirate').value = '';
                     
                     // تعيين التاريخ الافتراضي (شهر من الآن)
                     const nextMonth = new Date();
                     nextMonth.setMonth(nextMonth.getMonth() + 1);
-                    document.getElementById('insuranceExpiry').value = nextMonth.toISOString().split('T')[0];
-                    document.getElementById('licenseExpiry').value = nextMonth.toISOString().split('T')[0];
+                    document.getElementById('insuranceExpiry').value = formatDate(nextMonth);
+                    document.getElementById('licenseExpiry').value = formatDate(nextMonth);
                 }
                 
                 carModal.style.display = 'flex';
@@ -1153,7 +1191,7 @@
             // عرض تنبيه الحذف
             function showDeleteAlert(car) {
                 carToDelete = car;
-                deleteMessage.textContent = `هل أنت متأكد من رغبتك في حذف السيارة "${car.carId}"؟ لا يمكن التراجع عن هذا الإجراء ولا يمكن إعادة استخدام رقم السيارة.`;
+                deleteMessage.textContent = `Are you sure you want to delete the car with plate number "${car.licensePlate}"? This action cannot be undone.`;
                 deleteAlert.style.display = 'flex';
             }
 
@@ -1166,12 +1204,12 @@
                 printWindow.document.write(`
                     <html>
                     <head>
-                        <title>طباعة بيانات السيارة - ${car.carId}</title>
+                        <title>Car Details - ${car.licensePlate}</title>
                         <style>
-                            body { font-family: Arial, sans-serif; padding: 20px; direction: rtl; }
+                            body { font-family: Arial, sans-serif; padding: 20px; direction: ltr; }
                             h1 { color: #1e40af; text-align: center; }
                             .info { margin-bottom: 10px; display: flex; }
-                            .label { font-weight: bold; color: #666; min-width: 150px; }
+                            .label { font-weight: bold; color: #666; min-width: 200px; }
                             .value { flex: 1; }
                             .expired { color: red; font-weight: bold; margin-left: 10px; }
                             .warning { color: orange; font-weight: bold; margin-left: 10px; }
@@ -1182,26 +1220,27 @@
                     <body>
                         <div class="header">
                             <h1>AL MASAOOD</h1>
-                            <h2>بيانات السيارة - ${car.carId}</h2>
+                            <h2>Car Details - ${car.licensePlate}</h2>
+                            <p><small>ID: ${car.id}</small></p>
                         </div>
-                        <div class="info"><span class="label">رقم اللوحة:</span><span class="value">${car.licensePlate}</span></div>
-                        <div class="info"><span class="label">المالك:</span><span class="value">${car.owner}</span></div>
-                        <div class="info"><span class="label">الإمارة:</span><span class="value">${car.emirate || 'غير محدد'}</span></div>
-                        <div class="info"><span class="label">النوع:</span><span class="value">${car.type}</span></div>
-                        <div class="info"><span class="label">سنة الصنع:</span><span class="value">${car.manufactureYear}</span></div>
-                        <div class="info"><span class="label">انتهاء التأمين:</span><span class="value">
-                            ${new Date(car.insuranceExpiry).toLocaleDateString('ar-EG')}
-                            ${insuranceStatus.status === 'expired' ? `<span class="expired">(منتهي)</span>` : ''}
-                            ${insuranceStatus.status === 'warning' ? `<span class="warning">(ينتهي بعد ${insuranceStatus.days} يوم)</span>` : ''}
+                        <div class="info"><span class="label">License Plate:</span><span class="value">${car.licensePlate}</span></div>
+                        <div class="info"><span class="label">Owner:</span><span class="value">${car.owner}</span></div>
+                        <div class="info"><span class="label">Emirate:</span><span class="value">${car.emirate || 'Not specified'}</span></div>
+                        <div class="info"><span class="label">Type:</span><span class="value">${car.type}</span></div>
+                        <div class="info"><span class="label">Manufacture Year:</span><span class="value">${car.manufactureYear}</span></div>
+                        <div class="info"><span class="label">Insurance Expiry:</span><span class="value">
+                            ${formatDate(car.insuranceExpiry)}
+                            ${insuranceStatus.status === 'expired' ? `<span class="expired">(Expired)</span>` : ''}
+                            ${insuranceStatus.status === 'warning' ? `<span class="warning">(Expires in ${insuranceStatus.days} days)</span>` : ''}
                         </span></div>
-                        <div class="info"><span class="label">انتهاء الترخيص:</span><span class="value">
-                            ${new Date(car.licenseExpiry).toLocaleDateString('ar-EG')}
-                            ${licenseStatus.status === 'expired' ? `<span class="expired">(منتهي)</span>` : ''}
-                            ${licenseStatus.status === 'warning' ? `<span class="warning">(ينتهي بعد ${licenseStatus.days} يوم)</span>` : ''}
+                        <div class="info"><span class="label">License Expiry:</span><span class="value">
+                            ${formatDate(car.licenseExpiry)}
+                            ${licenseStatus.status === 'expired' ? `<span class="expired">(Expired)</span>` : ''}
+                            ${licenseStatus.status === 'warning' ? `<span class="warning">(Expires in ${licenseStatus.days} days)</span>` : ''}
                         </span></div>
-                        ${car.notes ? `<div class="info"><span class="label">ملاحظات:</span><span class="value">${car.notes}</span></div>` : ''}
+                        ${car.notes ? `<div class="info"><span class="label">Notes:</span><span class="value">${car.notes}</span></div>` : ''}
                         <div class="footer">
-                            <p>طباعة من نظام إدارة السيارات - ${new Date().toLocaleDateString('ar-EG')}</p>
+                            <p>Printed from Car Management System - ${new Date().toLocaleDateString('en-US')}</p>
                         </div>
                     </body>
                     </html>
@@ -1216,7 +1255,6 @@
             carForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const carId = document.getElementById('carId').value.trim();
                 const licensePlate = document.getElementById('licensePlate').value.trim();
                 const plateCode = document.getElementById('plateCode').value.trim() || null;
                 const emirate = document.getElementById('emirate').value === 'other' 
@@ -1231,20 +1269,19 @@
                 const notes = document.getElementById('notes').value.trim() || null;
                 
                 // تحويل التواريخ إلى تنسيق YYYY-MM-DD (متوافق مع البيانات القديمة)
-                const insuranceEnd = insuranceExpiry.toISOString().split('T')[0];
-                const licenseEnd = licenseExpiry.toISOString().split('T')[0];
+                const insuranceEnd = formatDate(insuranceExpiry);
+                const licenseEnd = formatDate(licenseExpiry);
                 
                 const carData = {
-                    carId,
-                    plate: licensePlate, // استخدام اسم الحقل القديم
+                    plate: licensePlate, // اسم الحقل القديم
                     plateCode,
                     emirate: emirate || null,
                     owner,
                     user,
                     type,
-                    year: manufactureYear, // استخدام اسم الحقل القديم
-                    insuranceEnd, // استخدام اسم الحقل القديم
-                    licenseEnd, // استخدام اسم الحقل القديم
+                    year: manufactureYear, // اسم الحقل القديم
+                    insuranceEnd, // اسم الحقل القديم
+                    licenseEnd, // اسم الحقل القديم
                     notes,
                     userId: currentUser.uid,
                     updatedAt: new Date().toISOString()
@@ -1255,16 +1292,6 @@
                         // تحديث السيارة
                         await db.collection('cars').doc(editCarId).update(carData);
                     } else {
-                        // التحقق من عدم تكرار رقم السيارة
-                        const existingCar = await db.collection('cars')
-                            .where('carId', '==', carId)
-                            .get();
-                        
-                        if (!existingCar.empty) {
-                            alert('رقم السيارة هذا مستخدم بالفعل. يرجى استخدام رقم آخر.');
-                            return;
-                        }
-                        
                         carData.createdAt = new Date().toISOString();
                         
                         // إضافة سيارة جديدة
@@ -1276,7 +1303,7 @@
                     editCarId = null;
                 } catch (error) {
                     console.error('Error saving car:', error);
-                    alert('حدث خطأ أثناء حفظ السيارة. يرجى المحاولة مرة أخرى.');
+                    alert('Error saving car. Please try again.');
                 }
             });
 
@@ -1289,7 +1316,7 @@
                         carToDelete = null;
                     } catch (error) {
                         console.error('Error deleting car:', error);
-                        alert('حدث خطأ أثناء حذف السيارة. يرجى المحاولة مرة أخرى.');
+                        alert('Error deleting car. Please try again.');
                     }
                 }
             });
@@ -1338,13 +1365,13 @@
                     fetchCars();
                     
                 } catch (error) {
-                    let errorMessage = 'خطأ في البريد الإلكتروني أو كلمة المرور';
+                    let errorMessage = 'Incorrect email or password';
                     if (error.code === 'auth/user-not-found') {
-                        errorMessage = 'المستخدم غير موجود';
+                        errorMessage = 'User not found';
                     } else if (error.code === 'auth/wrong-password') {
-                        errorMessage = 'كلمة المرور غير صحيحة';
+                        errorMessage = 'Incorrect password';
                     } else if (error.code === 'auth/invalid-email') {
-                        errorMessage = 'بريد إلكتروني غير صالح';
+                        errorMessage = 'Invalid email address';
                     }
                     loginError.textContent = errorMessage;
                 } finally {
@@ -1426,6 +1453,18 @@
 
             // بدء تحديث التاريخ والوقت
             updateDateTime();
+            
+            // تأكد من تحميل الأرقام الإنجليزية
+            document.addEventListener('DOMContentLoaded', function() {
+                // تعيين اتجاه النص للأرقام
+                const allInputs = document.querySelectorAll('input, textarea, select');
+                allInputs.forEach(input => {
+                    if (input.type === 'number' || input.type === 'tel' || input.pattern === '[0-9]+') {
+                        input.style.fontFamily = 'Arial, sans-serif';
+                        input.style.direction = 'ltr';
+                    }
+                });
+            });
         }
     </script>
 </body>
