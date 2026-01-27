@@ -1066,20 +1066,33 @@
             function fetchCars() {
                 if (!currentUser) return;
                 
+                // جلب جميع السيارات بدون شرط userId (للتجربة)
                 db.collection('cars')
-                    .where('userId', '==', currentUser.uid)
                     .orderBy('createdAt', 'desc')
                     .onSnapshot(snapshot => {
                         cars = [];
                         snapshot.forEach(doc => {
                             const data = doc.data();
-                            cars.push({ 
-                                id: doc.id, 
-                                ...data,
-                                // تحويل التواريخ
-                                insuranceExpiry: data.insuranceExpiry ? data.insuranceExpiry.toDate().toISOString() : new Date().toISOString(),
-                                licenseExpiry: data.licenseExpiry ? data.licenseExpiry.toDate().toISOString() : new Date().toISOString()
-                            });
+                            
+                            // تحويل البيانات القديمة إلى التنسيق الجديد
+                            const car = {
+                                id: doc.id,
+                                carId: data.carId || 'غير محدد',
+                                licensePlate: data.plate || data.licensePlate || 'غير محدد',
+                                plateCode: data.plateCode || '',
+                                emirate: data.emirate || '',
+                                owner: data.owner || 'غير محدد',
+                                user: data.user || '',
+                                type: data.type || 'غير محدد',
+                                manufactureYear: data.year || data.manufactureYear || 'غير محدد',
+                                notes: data.notes || '',
+                                // التعامل مع التواريخ القديمة والجديدة
+                                insuranceExpiry: data.insuranceEnd || data.insuranceExpiry || new Date().toISOString(),
+                                licenseExpiry: data.licenseEnd || data.licenseExpiry || new Date().toISOString(),
+                                userId: data.userId || 'unknown'
+                            };
+                            
+                            cars.push(car);
                         });
                         updateCarsList();
                     }, error => {
@@ -1217,26 +1230,25 @@
                 const licenseExpiry = new Date(document.getElementById('licenseExpiry').value);
                 const notes = document.getElementById('notes').value.trim() || null;
                 
+                // تحويل التواريخ إلى تنسيق YYYY-MM-DD (متوافق مع البيانات القديمة)
+                const insuranceEnd = insuranceExpiry.toISOString().split('T')[0];
+                const licenseEnd = licenseExpiry.toISOString().split('T')[0];
+                
                 const carData = {
                     carId,
-                    licensePlate,
+                    plate: licensePlate, // استخدام اسم الحقل القديم
                     plateCode,
-                    emirate,
+                    emirate: emirate || null,
                     owner,
                     user,
                     type,
-                    manufactureYear,
-                    insuranceExpiry: firebase.firestore.Timestamp.fromDate(insuranceExpiry),
-                    licenseExpiry: firebase.firestore.Timestamp.fromDate(licenseExpiry),
+                    year: manufactureYear, // استخدام اسم الحقل القديم
+                    insuranceEnd, // استخدام اسم الحقل القديم
+                    licenseEnd, // استخدام اسم الحقل القديم
                     notes,
                     userId: currentUser.uid,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: new Date().toISOString()
                 };
-                
-                // إذا كانت إضافة جديدة، أضف createdAt
-                if (!editCarId) {
-                    carData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                }
                 
                 try {
                     if (editCarId) {
@@ -1246,13 +1258,14 @@
                         // التحقق من عدم تكرار رقم السيارة
                         const existingCar = await db.collection('cars')
                             .where('carId', '==', carId)
-                            .where('userId', '==', currentUser.uid)
                             .get();
                         
                         if (!existingCar.empty) {
                             alert('رقم السيارة هذا مستخدم بالفعل. يرجى استخدام رقم آخر.');
                             return;
                         }
+                        
+                        carData.createdAt = new Date().toISOString();
                         
                         // إضافة سيارة جديدة
                         await db.collection('cars').add(carData);
