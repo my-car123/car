@@ -1,16 +1,107 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام إدارة السيارات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase Module -->
+<style>
+body {
+  margin: 0;
+  font-family: Tahoma, Arial;
+  background: #ffffff;
+  color: #000;
+}
+
+header {
+  text-align: center;
+  border-bottom: 3px solid #0b4da2;
+  padding: 20px;
+}
+
+header img {
+  max-width: 160px;
+}
+
+#datetime {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  border: 2px solid #0b4da2;
+  padding: 30px;
+  border-radius: 8px;
+}
+
+h2 {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 30px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  font-size: 20px;
+  margin-bottom: 20px;
+  border: 2px solid #0b4da2;
+  border-radius: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  font-size: 22px;
+  background: #0b4da2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #083b7a;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 16px;
+  color: #444;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="logo.png" alt="AL MASAOOD">
+  <div id="datetime"></div>
+</header>
+
+<div class="container">
+  <h2>تسجيل الدخول</h2>
+
+  <input type="email" id="email" placeholder="البريد الإلكتروني">
+  <input type="password" id="password" placeholder="كلمة المرور">
+
+  <button onclick="login()">دخول</button>
+</div>
+
+<footer>
+  © Developed by Mohamed Saad
+</footer>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
   authDomain: "my-car123.firebaseapp.com",
@@ -21,186 +112,42 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-window.db = getFirestore(app);
-window.auth = getAuth(app);
+/* Login */
+window.login = function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-window.collection = collection;
-window.addDoc = addDoc;
-window.getDocs = getDocs;
-window.deleteDoc = deleteDoc;
-window.doc = doc;
-window.updateDoc = updateDoc;
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("تم تسجيل الدخول بنجاح");
+    })
+    .catch(error => {
+      alert(error.message);
+    });
+};
 
-window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-window.onAuthStateChanged = onAuthStateChanged;
-window.signOut = signOut;
-</script>
-
-<style>
-body{margin:0;font-family:Tahoma;background:#fff}
-header{text-align:center;border-bottom:3px solid #0a2a66;padding:10px}
-header img{max-width:140px}
-#datetime{font-size:20px;font-weight:bold}
-.container{max-width:900px;margin:auto;padding:20px}
-input,textarea,button{width:100%;padding:10px;margin:5px 0;font-size:18px}
-button{border:2px solid #0a2a66;background:#0a2a66;color:#fff;cursor:pointer}
-.card{border:3px solid #0a2a66;margin:15px 0}
-.card.warning{border-color:#ff9800}
-.card.danger{border-color:#f44336}
-.card-header{padding:10px;font-size:22px;font-weight:bold;cursor:pointer;background:#f5f5f5}
-.card-body{display:none;padding:10px}
-.plate{border:3px solid #000;text-align:center;padding:10px;font-size:34px;font-weight:bold;margin:10px 0}
-.alert{font-size:20px;font-weight:bold;color:#f44336}
-.footer{border-top:2px solid #0a2a66;text-align:center;padding:10px;margin-top:20px}
-.hidden{display:none}
-.actions button{margin:5px 0}
-</style>
-</head>
-
-<body>
-
-<header>
-  <img src="logo.png">
-  <div id="datetime"></div>
-</header>
-
-<div class="container">
-
-<div id="loginBox">
-  <h2>تسجيل الدخول</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">دخول</button>
-</div>
-
-<div id="dashboard" class="hidden">
-  <button onclick="logout()">تسجيل خروج</button>
-
-  <h2>إضافة / تعديل سيارة</h2>
-  <input id="editId" class="hidden">
-  <input id="plateNumber" placeholder="رقم اللوحة (123)">
-  <input id="plateCode" placeholder="رمز اللوحة">
-  <input id="owner" placeholder="المالك">
-  <input id="user" placeholder="المستخدم">
-  <input id="carType" placeholder="نوع السيارة">
-  <input id="year" placeholder="سنة الصنع">
-  <textarea id="notes" placeholder="ملاحظات"></textarea>
-  <input id="license" type="date">
-  <input id="insurance" type="date">
-  <button onclick="saveCar()">حفظ</button>
-
-  <h2>السيارات</h2>
-  <div id="cars"></div>
-</div>
-
-</div>
-
-<div class="footer">
-© All Rights Reserved – Developed by Mohamed saad
-</div>
-
-<script>
-function updateTime(){
-  const d=new Date();
-  datetime.innerText =
-    d.toLocaleDateString("en-GB",{weekday:'long',year:'numeric',month:'2-digit',day:'2-digit'})
-    +" "+d.toLocaleTimeString("en-GB");
-}
-setInterval(updateTime,1000);updateTime();
-
-window.onAuthStateChanged(window.auth,user=>{
-  if(user){
-    loginBox.classList.add("hidden");
-    dashboard.classList.remove("hidden");
-    loadCars();
+/* Auth State */
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Logged in:", user.email);
+    // هنا لاحقًا نفتح صفحة السيارات
   }
 });
 
-function login(){
-  window.signInWithEmailAndPassword(window.auth,email.value,password.value);
+/* Date & Time */
+function updateDateTime() {
+  const now = new Date();
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const day = days[now.getDay()];
+  const date = now.toLocaleDateString("en-GB");
+  const time = now.toLocaleTimeString("en-GB");
+  document.getElementById("datetime").innerText = `${day}, ${date} ${time}`;
 }
-function logout(){
-  window.signOut(window.auth);
-}
+setInterval(updateDateTime, 1000);
+updateDateTime();
 
-async function saveCar(){
-  const data={
-    plateNumber:plateNumber.value,
-    plateCode:plateCode.value,
-    owner:owner.value,
-    user:user.value,
-    carType:carType.value,
-    year:year.value,
-    notes:notes.value,
-    license:license.value,
-    insurance:insurance.value,
-    createdAt:new Date()
-  };
-  if(editId.value){
-    await window.updateDoc(window.doc(window.db,"cars",editId.value),data);
-  }else{
-    await window.addDoc(window.collection(window.db,"cars"),data);
-  }
-  editId.value="";
-  loadCars();
-}
-
-async function loadCars(){
-  cars.innerHTML="";
-  const snap=await window.getDocs(window.collection(window.db,"cars"));
-  snap.forEach(d=>{
-    const c=d.data();
-    const now=new Date();
-    const licDiff=(new Date(c.license)-now)/86400000;
-    const insDiff=(new Date(c.insurance)-now)/86400000;
-    let cls="",alert="";
-    if(licDiff<=0||insDiff<=0){cls="danger";alert="منتهي";}
-    else if(licDiff<=15||insDiff<=15){cls="warning";alert="قارب على الانتهاء";}
-    const div=document.createElement("div");
-    div.className="card "+cls;
-    div.innerHTML=`
-      <div class="card-header">${c.plateNumber} - ${c.owner}</div>
-      <div class="card-body">
-        <div class="plate">${c.plateCode} ${c.plateNumber}</div>
-        ${alert?`<div class="alert">${alert}</div>`:""}
-        <p>نوع: ${c.carType}</p>
-        <p>سنة: ${c.year}</p>
-        <p>ملاحظات: ${c.notes}</p>
-        <div class="actions">
-          <button onclick='editCar("${d.id}",${JSON.stringify(c)})'>تعديل</button>
-          <button onclick='deleteCar("${d.id}")'>حذف</button>
-          <button onclick="window.print()">طباعة</button>
-        </div>
-      </div>`;
-    div.querySelector(".card-header").onclick=()=>{
-      const b=div.querySelector(".card-body");
-      b.style.display=b.style.display=="block"?"none":"block";
-    }
-    cars.appendChild(div);
-  });
-}
-
-function editCar(id,c){
-  editId.value=id;
-  plateNumber.value=c.plateNumber;
-  plateCode.value=c.plateCode;
-  owner.value=c.owner;
-  user.value=c.user;
-  carType.value=c.carType;
-  year.value=c.year;
-  notes.value=c.notes;
-  license.value=c.license;
-  insurance.value=c.insurance;
-  window.scrollTo(0,0);
-}
-
-async function deleteCar(id){
-  if(confirm("تأكيد الحذف؟")){
-    await window.deleteDoc(window.doc(window.db,"cars",id));
-    loadCars();
-  }
-}
 </script>
 
 </body>
