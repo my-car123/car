@@ -5,179 +5,153 @@
 <title>نظام إدارة السيارات</title>
 
 <style>
-body{
-  margin:0;
-  font-family: Tahoma, Arial;
-  background:#fff;
-}
-header{
-  text-align:center;
-  border-bottom:3px solid #0a3cff;
-  padding:15px;
-}
-header img{
-  height:90px;
-}
-#datetime{
-  font-size:22px;
-  font-weight:bold;
-  margin-top:10px;
-}
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-}
-input,button{
-  width:100%;
-  padding:14px;
-  margin:8px 0;
-  font-size:20px;
-}
-button{
-  background:#0a3cff;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-button:hover{
-  opacity:0.9;
-}
-.card{
-  border:2px solid #0a3cff;
-  border-radius:8px;
-  margin:10px 0;
-}
-.card-header{
-  padding:15px;
-  font-size:22px;
-  cursor:pointer;
-  background:#f5f5f5;
-}
-.card-body{
-  display:none;
-  padding:15px;
-  font-size:20px;
-}
-footer{
-  text-align:center;
-  padding:15px;
-  border-top:2px solid #0a3cff;
-  font-size:18px;
-}
-.hidden{display:none;}
+body{margin:0;font-family:Tahoma;background:#fff}
+header{text-align:center;border-bottom:3px solid #0a3cff;padding:15px}
+header img{height:90px}
+#datetime{font-size:22px;font-weight:bold;margin-top:10px}
+.container{max-width:1000px;margin:auto;padding:20px}
+input,textarea,button{width:100%;padding:14px;margin:6px 0;font-size:20px}
+button{background:#0a3cff;color:#fff;border:none;cursor:pointer}
+button:hover{opacity:.9}
+.hidden{display:none}
+.card{border:2px solid #0a3cff;border-radius:8px;margin:10px 0}
+.card-header{padding:15px;font-size:22px;background:#f3f6ff;cursor:pointer}
+.card-body{display:none;padding:15px;font-size:20px}
+.plate{border:2px solid #000;padding:10px;font-size:24px;font-weight:bold;display:inline-block}
+.warn{color:red;font-weight:bold}
+footer{text-align:center;border-top:2px solid #0a3cff;padding:15px;font-size:18px}
+.iconBtn{width:auto;padding:10px 20px;margin:5px;font-size:18px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="logo.png">
-  <div id="datetime"></div>
+<img src="logo.png">
+<div id="datetime"></div>
 </header>
 
 <div class="container">
 
 <!-- LOGIN -->
 <div id="loginBox">
-  <h2>تسجيل الدخول</h2>
-  <input id="email" type="email" placeholder="البريد الإلكتروني">
-  <input id="password" type="password" placeholder="كلمة المرور">
-  <button onclick="login()">دخول</button>
+<h2>تسجيل الدخول</h2>
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
+<button onclick="login()">دخول</button>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
-  <h2>السيارات</h2>
 
-  <button onclick="addCar()">إضافة سيارة</button>
+<h2>إدارة السيارات</h2>
 
-  <div id="carsList"></div>
+<button onclick="openForm()">➕ إضافة سيارة</button>
+
+<!-- FORM -->
+<div id="carForm" class="hidden">
+<hr>
+<input id="plateCode" placeholder="رمز اللوحة">
+<input id="plateNumber" placeholder="رقم اللوحة">
+<input id="owner" placeholder="المالك">
+<input id="user" placeholder="المستخدم">
+<input id="type" placeholder="نوع السيارة">
+<input id="year" placeholder="سنة الصنع">
+<input type="date" id="licenseEnd">
+<input type="date" id="insuranceEnd">
+<textarea id="notes" placeholder="ملاحظات"></textarea>
+<button onclick="saveCar()">حفظ</button>
+<button onclick="closeForm()">إلغاء</button>
+<hr>
 </div>
 
+<div id="carsList"></div>
+
+</div>
 </div>
 
-<footer>
-Developed by Mohamed Saad ©
-</footer>
+<footer>© Developed by Mohamed Saad</footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
-  authDomain: "my-car123.firebaseapp.com",
-  projectId: "my-car123",
-  storageBucket: "my-car123.firebasestorage.app",
-  messagingSenderId: "731889650556",
-  appId: "1:731889650556:web:9c1fb521647131f48db2f9"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// LOGIN
-window.login = function(){
-  signInWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  ).then(()=>{
-    alert("تم تسجيل الدخول بنجاح");
-  }).catch(e=>{
-    alert(e.message);
-  });
-}
-
-// AUTH STATE
-onAuthStateChanged(auth, user=>{
-  if(user){
-    loginBox.classList.add("hidden");
-    dashboard.classList.remove("hidden");
-    loadCars();
-  }else{
-    loginBox.classList.remove("hidden");
-    dashboard.classList.add("hidden");
-  }
+const app=initializeApp({
+apiKey:"AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
+authDomain:"my-car123.firebaseapp.com",
+projectId:"my-car123",
+storageBucket:"my-car123.firebasestorage.app",
+messagingSenderId:"731889650556",
+appId:"1:731889650556:web:9c1fb521647131f48db2f9"
 });
 
-// ADD CAR
-window.addCar = async function(){
-  await addDoc(collection(db,"cars"),{
-    plate:"UAE-12345",
-    owner:"مالك السيارة"
-  });
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+// LOGIN
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value)
+.then(()=>alert("تم تسجيل الدخول بنجاح"))
+.catch(e=>alert(e.message));
+
+// AUTH
+onAuthStateChanged(auth,u=>{
+if(u){loginBox.classList.add("hidden");dashboard.classList.remove("hidden");loadCars();}
+else{loginBox.classList.remove("hidden");dashboard.classList.add("hidden");}
+});
+
+// FORM
+window.openForm=()=>carForm.classList.remove("hidden");
+window.closeForm=()=>carForm.classList.add("hidden");
+
+// SAVE
+window.saveCar=async()=>{
+await addDoc(collection(db,"cars"),{
+plate:`${plateCode.value} ${plateNumber.value}`,
+owner:owner.value,
+user:user.value,
+type:type.value,
+year:year.value,
+licenseEnd:licenseEnd.value,
+insuranceEnd:insuranceEnd.value,
+notes:notes.value,
+created:new Date()
+});
+closeForm();
+};
+
+// LOAD
+function loadCars(){
+onSnapshot(collection(db,"cars"),snap=>{
+carsList.innerHTML="";
+snap.forEach(d=>{
+const c=d.data();
+const now=new Date();
+const lic=new Date(c.licenseEnd);
+const diff=Math.ceil((lic-now)/86400000);
+carsList.innerHTML+=`
+<div class="card">
+<div class="card-header">${c.plate} - ${c.owner}</div>
+<div class="card-body">
+<div class="plate">${c.plate}</div><br><br>
+نوع السيارة: ${c.type}<br>
+سنة الصنع: ${c.year}<br>
+${diff<=15?'<div class="warn">⚠️ الترخيص قارب على الانتهاء</div>':''}
+<button class="iconBtn" onclick="deleteCar('${d.id}')">🗑 حذف</button>
+<button class="iconBtn" onclick="window.print()">🖨 طباعة</button>
+</div>
+</div>`;
+});
+document.querySelectorAll(".card-header").forEach(h=>{
+h.onclick=()=>{const b=h.nextElementSibling;b.style.display=b.style.display=="block"?"none":"block";}
+});
+});
 }
 
-// LOAD CARS
-function loadCars(){
-  onSnapshot(collection(db,"cars"), snap=>{
-    carsList.innerHTML="";
-    snap.forEach(doc=>{
-      const d=doc.data();
-      const card=document.createElement("div");
-      card.className="card";
-      card.innerHTML=`
-        <div class="card-header">${d.plate} - ${d.owner}</div>
-        <div class="card-body">تفاصيل السيارة</div>
-      `;
-      card.querySelector(".card-header").onclick=()=>{
-        const body=card.querySelector(".card-body");
-        body.style.display=body.style.display=="block"?"none":"block";
-      }
-      carsList.appendChild(card);
-    });
-  });
-}
+window.deleteCar=id=>deleteDoc(doc(db,"cars",id));
 
 // TIME
-setInterval(()=>{
-  const d=new Date();
-  datetime.innerText=d.toLocaleString("en-GB");
-},1000);
+setInterval(()=>datetime.innerText=new Date().toLocaleString("en-GB"),1000);
 </script>
 
 </body>
