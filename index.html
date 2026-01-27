@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام إدارة السيارات</title>
 
+<!-- Firebase Module -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -20,16 +21,20 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
 
-window.db=db;window.auth=auth;
-window.collection=collection;window.addDoc=addDoc;
-window.getDocs=getDocs;window.deleteDoc=deleteDoc;
-window.doc=doc;window.updateDoc=updateDoc;
-window.signInWithEmailAndPassword=signInWithEmailAndPassword;
-window.onAuthStateChanged=onAuthStateChanged;
-window.signOut=signOut;
+window.db = getFirestore(app);
+window.auth = getAuth(app);
+
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
+window.updateDoc = updateDoc;
+
+window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+window.onAuthStateChanged = onAuthStateChanged;
+window.signOut = signOut;
 </script>
 
 <style>
@@ -45,14 +50,7 @@ button{border:2px solid #0a2a66;background:#0a2a66;color:#fff;cursor:pointer}
 .card.danger{border-color:#f44336}
 .card-header{padding:10px;font-size:22px;font-weight:bold;cursor:pointer;background:#f5f5f5}
 .card-body{display:none;padding:10px}
-.plate{
-  border:3px solid #000;
-  text-align:center;
-  padding:10px;
-  font-size:34px;
-  font-weight:bold;
-  margin:10px 0;
-}
+.plate{border:3px solid #000;text-align:center;padding:10px;font-size:34px;font-weight:bold;margin:10px 0}
 .alert{font-size:20px;font-weight:bold;color:#f44336}
 .footer{border-top:2px solid #0a2a66;text-align:center;padding:10px;margin-top:20px}
 .hidden{display:none}
@@ -105,17 +103,26 @@ button{border:2px solid #0a2a66;background:#0a2a66;color:#fff;cursor:pointer}
 <script>
 function updateTime(){
   const d=new Date();
-  datetime.innerText=d.toLocaleDateString("en-GB",{weekday:'long',year:'numeric',month:'2-digit',day:'2-digit'})+
-  " "+d.toLocaleTimeString("en-GB");
+  datetime.innerText =
+    d.toLocaleDateString("en-GB",{weekday:'long',year:'numeric',month:'2-digit',day:'2-digit'})
+    +" "+d.toLocaleTimeString("en-GB");
 }
 setInterval(updateTime,1000);updateTime();
 
-onAuthStateChanged(auth,u=>{
-  if(u){loginBox.classList.add("hidden");dashboard.classList.remove("hidden");loadCars();}
+window.onAuthStateChanged(window.auth,user=>{
+  if(user){
+    loginBox.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    loadCars();
+  }
 });
 
-function login(){signInWithEmailAndPassword(auth,email.value,password.value);}
-function logout(){signOut(auth);}
+function login(){
+  window.signInWithEmailAndPassword(window.auth,email.value,password.value);
+}
+function logout(){
+  window.signOut(window.auth);
+}
 
 async function saveCar(){
   const data={
@@ -131,9 +138,9 @@ async function saveCar(){
     createdAt:new Date()
   };
   if(editId.value){
-    await updateDoc(doc(db,"cars",editId.value),data);
+    await window.updateDoc(window.doc(window.db,"cars",editId.value),data);
   }else{
-    await addDoc(collection(db,"cars"),data);
+    await window.addDoc(window.collection(window.db,"cars"),data);
   }
   editId.value="";
   loadCars();
@@ -141,14 +148,13 @@ async function saveCar(){
 
 async function loadCars(){
   cars.innerHTML="";
-  const snap=await getDocs(collection(db,"cars"));
+  const snap=await window.getDocs(window.collection(window.db,"cars"));
   snap.forEach(d=>{
     const c=d.data();
     const now=new Date();
     const licDiff=(new Date(c.license)-now)/86400000;
     const insDiff=(new Date(c.insurance)-now)/86400000;
-    let cls="";
-    let alert="";
+    let cls="",alert="";
     if(licDiff<=0||insDiff<=0){cls="danger";alert="منتهي";}
     else if(licDiff<=15||insDiff<=15){cls="warning";alert="قارب على الانتهاء";}
     const div=document.createElement("div");
@@ -162,9 +168,9 @@ async function loadCars(){
         <p>سنة: ${c.year}</p>
         <p>ملاحظات: ${c.notes}</p>
         <div class="actions">
-          <button onclick="editCar('${d.id}',${JSON.stringify(c).replace(/"/g,'&quot;')})">تعديل</button>
-          <button onclick="deleteCar('${d.id}')">حذف</button>
-          <button onclick="print()">طباعة</button>
+          <button onclick='editCar("${d.id}",${JSON.stringify(c)})'>تعديل</button>
+          <button onclick='deleteCar("${d.id}")'>حذف</button>
+          <button onclick="window.print()">طباعة</button>
         </div>
       </div>`;
     div.querySelector(".card-header").onclick=()=>{
@@ -191,7 +197,7 @@ function editCar(id,c){
 
 async function deleteCar(id){
   if(confirm("تأكيد الحذف؟")){
-    await deleteDoc(doc(db,"cars",id));
+    await window.deleteDoc(window.doc(window.db,"cars",id));
     loadCars();
   }
 }
