@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Car Management System</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- استخدام الإصدار الكامل من Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
+        /* CSS Code - Start */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Noto Sans Arabic', sans-serif;
+            font-family: 'Noto Sans Arabic', Arial, sans-serif;
         }
 
         :root {
@@ -30,7 +30,6 @@
         body {
             background-color: #f8fafc;
             min-height: 100vh;
-            font-family: 'Noto Sans Arabic', Arial, sans-serif;
         }
 
         .container {
@@ -39,7 +38,6 @@
             padding: 20px;
         }
 
-        /* صفحة تسجيل الدخول */
         .login-page {
             display: flex;
             justify-content: center;
@@ -99,11 +97,6 @@
             font-family: Arial, sans-serif;
         }
 
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-        }
-
         .login-btn {
             background-color: var(--primary-blue);
             color: white;
@@ -121,11 +114,6 @@
             background-color: var(--light-blue);
         }
 
-        .login-btn:disabled {
-            background-color: var(--gray);
-            cursor: not-allowed;
-        }
-
         .error-message {
             color: var(--danger);
             margin-top: 10px;
@@ -138,7 +126,6 @@
             border: 1px solid var(--danger);
         }
 
-        /* صفحة الرئيسية */
         .main-page {
             display: none;
             min-height: 100vh;
@@ -164,7 +151,6 @@
             direction: ltr;
             text-align: left;
             font-family: Arial, sans-serif;
-            font-variant-numeric: tabular-nums;
         }
 
         .user-info {
@@ -190,14 +176,6 @@
             font-family: Arial, sans-serif;
         }
 
-        .logout-btn:hover {
-            background: #e5e7eb;
-        }
-
-        .content {
-            padding: 25px;
-        }
-
         .page-title {
             color: var(--primary-blue);
             margin-bottom: 25px;
@@ -205,7 +183,6 @@
             text-align: center;
         }
 
-        /* أزرار الإجراءات */
         .actions-bar {
             display: flex;
             justify-content: space-between;
@@ -228,17 +205,12 @@
             font-family: Arial, sans-serif;
         }
 
-        .add-car-btn:hover {
-            background-color: #0da271;
-        }
-
         .cars-count {
             color: var(--gray);
             font-size: 16px;
             font-family: Arial, sans-serif;
         }
 
-        /* بطاقات السيارات - أكورديون */
         .cars-container {
             display: flex;
             flex-direction: column;
@@ -252,10 +224,6 @@
             background: white;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
-        }
-
-        .car-card:hover {
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .car-header {
@@ -321,7 +289,6 @@
             transform: rotate(180deg);
         }
 
-        /* تفاصيل السيارة */
         .car-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -363,7 +330,6 @@
             font-weight: 600;
             margin-right: 8px;
             font-family: Arial, sans-serif;
-            direction: ltr;
         }
 
         .expired-badge {
@@ -375,10 +341,8 @@
             font-weight: 600;
             margin-right: 8px;
             font-family: Arial, sans-serif;
-            direction: ltr;
         }
 
-        /* أزرار البطاقة */
         .car-actions {
             display: flex;
             gap: 12px;
@@ -405,17 +369,9 @@
             color: white;
         }
 
-        .edit-btn:hover {
-            background-color: #2563eb;
-        }
-
         .delete-btn {
             background-color: var(--danger);
             color: white;
-        }
-
-        .delete-btn:hover {
-            background-color: #b91c1c;
         }
 
         .print-btn {
@@ -423,11 +379,6 @@
             color: white;
         }
 
-        .print-btn:hover {
-            background-color: #4b5563;
-        }
-
-        /* نافذة إضافة/تعديل سيارة */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -467,15 +418,6 @@
             font-weight: 700;
         }
 
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--gray);
-            cursor: pointer;
-            padding: 5px;
-        }
-
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -504,18 +446,6 @@
             transition: border-color 0.3s;
             direction: ltr;
             font-family: Arial, sans-serif;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary-blue);
         }
 
         .form-actions {
@@ -551,7 +481,6 @@
             font-family: Arial, sans-serif;
         }
 
-        /* تنبيهات */
         .alert-overlay {
             position: fixed;
             top: 0;
@@ -606,71 +535,6 @@
             font-family: Arial, sans-serif;
         }
 
-        .cancel-alert-btn {
-            background-color: var(--gray);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: Arial, sans-serif;
-        }
-
-        /* الطباعة */
-        @media print {
-            .header,
-            .actions-bar,
-            .car-actions,
-            .add-car-btn {
-                display: none !important;
-            }
-            
-            .car-card {
-                break-inside: avoid;
-                border: 2px solid #000;
-            }
-            
-            .car-content {
-                max-height: none !important;
-                padding: 20px !important;
-                display: block !important;
-            }
-        }
-
-        /* تجاوب */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .car-info {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .car-actions {
-                flex-direction: column;
-            }
-            
-            .action-btn {
-                width: 100%;
-            }
-            
-            .modal {
-                padding: 20px;
-                margin: 10px;
-            }
-        }
-
-        /* مؤشر التحميل */
         .loading {
             display: inline-block;
             width: 20px;
@@ -685,15 +549,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* التأكد من أن جميع الأرقام إنجليزية */
-        input[type="number"],
-        input[type="tel"],
-        .english-numbers {
-            font-family: Arial, sans-serif !important;
-            font-feature-settings: "tnum";
-            -moz-font-feature-settings: "tnum";
-            -webkit-font-feature-settings: "tnum";
-        }
+        /* CSS Code - End */
     </style>
 </head>
 <body>
@@ -841,7 +697,7 @@
     </div>
 
     <script>
-        // تهيئة Firebase
+        // JavaScript Code - Start
         const firebaseConfig = {
             apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
             authDomain: "my-car123.firebaseapp.com",
@@ -852,23 +708,19 @@
             measurementId: "G-2V1SG587QS"
         };
 
-        // التحقق من تحميل Firebase
         if (typeof firebase === 'undefined') {
             document.getElementById('loginError').textContent = 'Error: Firebase library not loaded. Please refresh the page.';
             document.getElementById('loginBtn').disabled = true;
         } else {
-            // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            // حالة النظام
             let currentUser = null;
             let cars = [];
             let carToDelete = null;
             let editCarId = null;
 
-            // عناصر DOM
             const loginPage = document.getElementById('loginPage');
             const mainPage = document.getElementById('mainPage');
             const loginForm = document.getElementById('loginForm');
@@ -894,7 +746,6 @@
             const emirateSelect = document.getElementById('emirate');
             const otherEmirateGroup = document.getElementById('otherEmirateGroup');
 
-            // تحديث التاريخ والوقت باللغة الإنجليزية
             function updateDateTime() {
                 const now = new Date();
                 const dateOptions = {
@@ -917,8 +768,7 @@
                 datetimeDisplay.textContent = `${dateStr} - ${timeStr}`;
             }
 
-            // التحقق من تاريخ الصلاحية
-            function checkExpiry(expiryDate, type) {
+            function checkExpiry(expiryDate) {
                 const expiry = new Date(expiryDate);
                 const today = new Date();
                 const daysDiff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
@@ -931,7 +781,6 @@
                 return { status: 'valid', days: daysDiff };
             }
 
-            // تنسيق التاريخ إلى YYYY-MM-DD
             function formatDate(dateString) {
                 const date = new Date(dateString);
                 const year = date.getFullYear();
@@ -940,10 +789,9 @@
                 return `${year}-${month}-${day}`;
             }
 
-            // إنشاء بطاقة سيارة
             function createCarCard(car) {
-                const insuranceStatus = checkExpiry(car.insuranceExpiry, 'insurance');
-                const licenseStatus = checkExpiry(car.licenseExpiry, 'license');
+                const insuranceStatus = checkExpiry(car.insuranceExpiry);
+                const licenseStatus = checkExpiry(car.licenseExpiry);
                 
                 const card = document.createElement('div');
                 card.className = 'car-card';
@@ -955,7 +803,6 @@
                 const title = document.createElement('div');
                 title.className = 'car-title';
                 
-                // عرض أول 8 أحرف من المعرف التلقائي
                 const carId = document.createElement('div');
                 carId.className = 'car-id';
                 carId.textContent = `ID: ${car.id.substring(0, 8)}...`;
@@ -988,7 +835,6 @@
                 const details = document.createElement('div');
                 details.className = 'car-details';
                 
-                // تفاصيل السيارة
                 const detailsData = [
                     { label: 'Auto ID', value: car.id },
                     { label: 'Plate Code', value: car.plateCode || 'Not specified' },
@@ -1040,7 +886,6 @@
                     details.appendChild(detailItem);
                 });
                 
-                // الملاحظات
                 if (car.notes) {
                     const notesItem = document.createElement('div');
                     notesItem.className = 'detail-item';
@@ -1061,7 +906,6 @@
                 
                 content.appendChild(details);
                 
-                // أزرار الإجراءات
                 const actions = document.createElement('div');
                 actions.className = 'car-actions';
                 
@@ -1089,7 +933,6 @@
                 card.appendChild(header);
                 card.appendChild(content);
                 
-                // حدث فتح/إغلاق الأكورديون
                 header.onclick = () => {
                     card.classList.toggle('expanded');
                 };
@@ -1097,7 +940,6 @@
                 return card;
             }
 
-            // تحديث قائمة السيارات
             function updateCarsList() {
                 carsContainer.innerHTML = '';
                 cars.forEach(car => {
@@ -1107,11 +949,9 @@
                 carsCount.textContent = `${cars.length} cars`;
             }
 
-            // جلب السيارات من قاعدة البيانات
             function fetchCars() {
                 if (!currentUser) return;
                 
-                // جلب جميع السيارات (سيتم إضافة فلترة بالمستخدم لاحقاً)
                 db.collection('cars')
                     .orderBy('createdAt', 'desc')
                     .onSnapshot(snapshot => {
@@ -1119,9 +959,8 @@
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             
-                            // تحويل البيانات القديمة والجديدة
                             const car = {
-                                id: doc.id, // المعرف التلقائي من Firebase
+                                id: doc.id,
                                 licensePlate: data.plate || data.licensePlate || 'Not specified',
                                 plateCode: data.plateCode || '',
                                 emirate: data.emirate || '',
@@ -1144,7 +983,6 @@
                     });
             }
 
-            // عرض نموذج إضافة/تعديل سيارة
             function showCarForm(car = null) {
                 editCarId = car ? car.id : null;
                 modalTitle.textContent = car ? 'Edit Car' : 'Add New Car';
@@ -1158,7 +996,6 @@
                     document.getElementById('type').value = car.type;
                     document.getElementById('manufactureYear').value = car.manufactureYear;
                     
-                    // تحويل التواريخ إلى تنسيق YYYY-MM-DD
                     document.getElementById('insuranceExpiry').value = formatDate(car.insuranceExpiry);
                     document.getElementById('licenseExpiry').value = formatDate(car.licenseExpiry);
                     document.getElementById('notes').value = car.notes || '';
@@ -1173,7 +1010,6 @@
                     otherEmirateGroup.style.display = 'none';
                     document.getElementById('emirate').value = '';
                     
-                    // تعيين التاريخ الافتراضي (شهر من الآن)
                     const nextMonth = new Date();
                     nextMonth.setMonth(nextMonth.getMonth() + 1);
                     document.getElementById('insuranceExpiry').value = formatDate(nextMonth);
@@ -1183,22 +1019,19 @@
                 carModal.style.display = 'flex';
             }
 
-            // تحرير سيارة
             function editCar(car) {
                 showCarForm(car);
             }
 
-            // عرض تنبيه الحذف
             function showDeleteAlert(car) {
                 carToDelete = car;
                 deleteMessage.textContent = `Are you sure you want to delete the car with plate number "${car.licensePlate}"? This action cannot be undone.`;
                 deleteAlert.style.display = 'flex';
             }
 
-            // طباعة بيانات السيارة
             function printCar(car) {
-                const insuranceStatus = checkExpiry(car.insuranceExpiry, 'insurance');
-                const licenseStatus = checkExpiry(car.licenseExpiry, 'license');
+                const insuranceStatus = checkExpiry(car.insuranceExpiry);
+                const licenseStatus = checkExpiry(car.licenseExpiry);
                 
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
@@ -1251,7 +1084,6 @@
                 }, 500);
             }
 
-            // حفظ السيارة
             carForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -1268,20 +1100,19 @@
                 const licenseExpiry = new Date(document.getElementById('licenseExpiry').value);
                 const notes = document.getElementById('notes').value.trim() || null;
                 
-                // تحويل التواريخ إلى تنسيق YYYY-MM-DD (متوافق مع البيانات القديمة)
                 const insuranceEnd = formatDate(insuranceExpiry);
                 const licenseEnd = formatDate(licenseExpiry);
                 
                 const carData = {
-                    plate: licensePlate, // اسم الحقل القديم
+                    plate: licensePlate,
                     plateCode,
                     emirate: emirate || null,
                     owner,
                     user,
                     type,
-                    year: manufactureYear, // اسم الحقل القديم
-                    insuranceEnd, // اسم الحقل القديم
-                    licenseEnd, // اسم الحقل القديم
+                    year: manufactureYear,
+                    insuranceEnd,
+                    licenseEnd,
                     notes,
                     userId: currentUser.uid,
                     updatedAt: new Date().toISOString()
@@ -1289,12 +1120,9 @@
                 
                 try {
                     if (editCarId) {
-                        // تحديث السيارة
                         await db.collection('cars').doc(editCarId).update(carData);
                     } else {
                         carData.createdAt = new Date().toISOString();
-                        
-                        // إضافة سيارة جديدة
                         await db.collection('cars').add(carData);
                     }
                     
@@ -1307,7 +1135,6 @@
                 }
             });
 
-            // حذف السيارة
             confirmDelete.addEventListener('click', async () => {
                 if (carToDelete) {
                     try {
@@ -1321,7 +1148,6 @@
                 }
             });
 
-            // إدارة الإمارة اليدوية
             emirateSelect.addEventListener('change', (e) => {
                 if (e.target.value === 'other') {
                     otherEmirateGroup.style.display = 'block';
@@ -1333,7 +1159,6 @@
                 }
             });
 
-            // تسجيل الدخول
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 loginError.textContent = '';
@@ -1341,7 +1166,6 @@
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 
-                // عرض مؤشر التحميل
                 loginText.style.display = 'none';
                 loginLoader.style.display = 'inline-block';
                 loginBtn.disabled = true;
@@ -1350,18 +1174,14 @@
                     const userCredential = await auth.signInWithEmailAndPassword(email, password);
                     currentUser = userCredential.user;
                     
-                    // التبديل بين الصفحات
                     loginPage.style.display = 'none';
                     mainPage.style.display = 'block';
                     
-                    // تحديث معلومات المستخدم
                     userNameDisplay.textContent = currentUser.email;
                     
-                    // تحديث التاريخ والوقت
                     updateDateTime();
                     setInterval(updateDateTime, 1000);
                     
-                    // جلب السيارات
                     fetchCars();
                     
                 } catch (error) {
@@ -1370,26 +1190,21 @@
                         errorMessage = 'User not found';
                     } else if (error.code === 'auth/wrong-password') {
                         errorMessage = 'Incorrect password';
-                    } else if (error.code === 'auth/invalid-email') {
-                        errorMessage = 'Invalid email address';
                     }
                     loginError.textContent = errorMessage;
                 } finally {
-                    // إخفاء مؤشر التحميل
                     loginText.style.display = 'inline-block';
                     loginLoader.style.display = 'none';
                     loginBtn.disabled = false;
                 }
             });
 
-            // تسجيل الخروج
             logoutBtn.addEventListener('click', async () => {
                 try {
                     await auth.signOut();
                     currentUser = null;
                     cars = [];
                     
-                    // إعادة التعيين
                     mainPage.style.display = 'none';
                     loginPage.style.display = 'flex';
                     loginForm.reset();
@@ -1400,7 +1215,6 @@
                 }
             });
 
-            // إغلاق النوافذ
             closeModal.addEventListener('click', () => {
                 carModal.style.display = 'none';
                 carForm.reset();
@@ -1422,7 +1236,6 @@
                 showCarForm();
             });
 
-            // التحقق من حالة تسجيل الدخول التلقائية
             auth.onAuthStateChanged(user => {
                 if (user) {
                     currentUser = user;
@@ -1438,7 +1251,6 @@
                 }
             });
 
-            // منع إغلاق النافذة بالنقر خارجها
             window.addEventListener('click', (e) => {
                 if (e.target === carModal) {
                     carModal.style.display = 'none';
@@ -1451,21 +1263,9 @@
                 }
             });
 
-            // بدء تحديث التاريخ والوقت
             updateDateTime();
-            
-            // تأكد من تحميل الأرقام الإنجليزية
-            document.addEventListener('DOMContentLoaded', function() {
-                // تعيين اتجاه النص للأرقام
-                const allInputs = document.querySelectorAll('input, textarea, select');
-                allInputs.forEach(input => {
-                    if (input.type === 'number' || input.type === 'tel' || input.pattern === '[0-9]+') {
-                        input.style.fontFamily = 'Arial, sans-serif';
-                        input.style.direction = 'ltr';
-                    }
-                });
-            });
         }
+        // JavaScript Code - End
     </script>
 </body>
 </html>
