@@ -3,105 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <title>نظام إدارة السيارات</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-  margin: 0;
+body{
+  margin:0;
   font-family: Tahoma, Arial;
-  background: #ffffff;
-  color: #000;
+  background:#fff;
 }
-
-header {
-  text-align: center;
-  border-bottom: 3px solid #0b4da2;
-  padding: 20px;
+header{
+  text-align:center;
+  border-bottom:3px solid #0a3cff;
+  padding:15px;
 }
-
-header img {
-  max-width: 160px;
+header img{
+  height:90px;
 }
-
-#datetime {
-  margin-top: 10px;
-  font-size: 22px;
-  font-weight: bold;
+#datetime{
+  font-size:22px;
+  font-weight:bold;
+  margin-top:10px;
 }
-
-.container {
-  max-width: 600px;
-  margin: 40px auto;
-  border: 2px solid #0b4da2;
-  padding: 30px;
-  border-radius: 8px;
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
 }
-
-h2 {
-  text-align: center;
-  font-size: 26px;
-  margin-bottom: 30px;
+input,button{
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  font-size:20px;
 }
-
-input {
-  width: 100%;
-  padding: 14px;
-  font-size: 20px;
-  margin-bottom: 20px;
-  border: 2px solid #0b4da2;
-  border-radius: 5px;
+button{
+  background:#0a3cff;
+  color:#fff;
+  border:none;
+  cursor:pointer;
 }
-
-button {
-  width: 100%;
-  padding: 15px;
-  font-size: 22px;
-  background: #0b4da2;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+button:hover{
+  opacity:0.9;
 }
-
-button:hover {
-  background: #083b7a;
+.card{
+  border:2px solid #0a3cff;
+  border-radius:8px;
+  margin:10px 0;
 }
-
-footer {
-  text-align: center;
-  margin-top: 40px;
-  font-size: 16px;
-  color: #444;
+.card-header{
+  padding:15px;
+  font-size:22px;
+  cursor:pointer;
+  background:#f5f5f5;
 }
+.card-body{
+  display:none;
+  padding:15px;
+  font-size:20px;
+}
+footer{
+  text-align:center;
+  padding:15px;
+  border-top:2px solid #0a3cff;
+  font-size:18px;
+}
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="logo.png" alt="AL MASAOOD">
+  <img src="logo.png">
   <div id="datetime"></div>
 </header>
 
 <div class="container">
+
+<!-- LOGIN -->
+<div id="loginBox">
   <h2>تسجيل الدخول</h2>
-
-  <input type="email" id="email" placeholder="البريد الإلكتروني">
-  <input type="password" id="password" placeholder="كلمة المرور">
-
+  <input id="email" type="email" placeholder="البريد الإلكتروني">
+  <input id="password" type="password" placeholder="كلمة المرور">
   <button onclick="login()">دخول</button>
 </div>
 
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+  <h2>السيارات</h2>
+
+  <button onclick="addCar()">إضافة سيارة</button>
+
+  <div id="carsList"></div>
+</div>
+
+</div>
+
 <footer>
-  © Developed by Mohamed Saad
+Developed by Mohamed Saad ©
 </footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
   authDomain: "my-car123.firebaseapp.com",
@@ -113,41 +117,67 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-/* Login */
-window.login = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+// LOGIN
+window.login = function(){
+  signInWithEmailAndPassword(
+    auth,
+    email.value,
+    password.value
+  ).then(()=>{
+    alert("تم تسجيل الدخول بنجاح");
+  }).catch(e=>{
+    alert(e.message);
+  });
+}
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert("تم تسجيل الدخول بنجاح");
-    })
-    .catch(error => {
-      alert(error.message);
-    });
-};
-
-/* Auth State */
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("Logged in:", user.email);
-    // هنا لاحقًا نفتح صفحة السيارات
+// AUTH STATE
+onAuthStateChanged(auth, user=>{
+  if(user){
+    loginBox.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    loadCars();
+  }else{
+    loginBox.classList.remove("hidden");
+    dashboard.classList.add("hidden");
   }
 });
 
-/* Date & Time */
-function updateDateTime() {
-  const now = new Date();
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const day = days[now.getDay()];
-  const date = now.toLocaleDateString("en-GB");
-  const time = now.toLocaleTimeString("en-GB");
-  document.getElementById("datetime").innerText = `${day}, ${date} ${time}`;
+// ADD CAR
+window.addCar = async function(){
+  await addDoc(collection(db,"cars"),{
+    plate:"UAE-12345",
+    owner:"مالك السيارة"
+  });
 }
-setInterval(updateDateTime, 1000);
-updateDateTime();
 
+// LOAD CARS
+function loadCars(){
+  onSnapshot(collection(db,"cars"), snap=>{
+    carsList.innerHTML="";
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const card=document.createElement("div");
+      card.className="card";
+      card.innerHTML=`
+        <div class="card-header">${d.plate} - ${d.owner}</div>
+        <div class="card-body">تفاصيل السيارة</div>
+      `;
+      card.querySelector(".card-header").onclick=()=>{
+        const body=card.querySelector(".card-body");
+        body.style.display=body.style.display=="block"?"none":"block";
+      }
+      carsList.appendChild(card);
+    });
+  });
+}
+
+// TIME
+setInterval(()=>{
+  const d=new Date();
+  datetime.innerText=d.toLocaleString("en-GB");
+},1000);
 </script>
 
 </body>
