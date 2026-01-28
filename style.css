@@ -1,62 +1,41 @@
-body {
-    background-color: #f8fafc;
-}
-
-/* لوحة السيارة الإماراتية */
-.uae-plate {
-    display: inline-flex;
-    border: 2px solid #333;
+/* تنسيق مدخلات الفورم */
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    overflow: hidden;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.form-input:focus { border-color: #2563eb; }
+
+/* لوحة السيارة */
+.uae-plate {
+    display: flex;
+    border: 2px solid #333;
+    border-radius: 6px;
     background: white;
-    min-width: 150px;
-    height: 45px;
+    height: 40px;
+    min-width: 130px;
     font-weight: bold;
 }
-
-.plate-code {
-    background: #eee;
-    padding: 0 10px;
-    display: flex;
-    align-items: center;
-    border-left: 2px solid #333;
-}
-
-.plate-number {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-}
+.plate-code { background: #eee; padding: 0 10px; display: flex; align-items: center; border-left: 2px solid #333; }
+.plate-number { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
 
 /* الأكورديون */
 .accordion-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: all 0.3s ease-out;
 }
-
-.accordion-content.open {
-    max-height: 1000px;
-}
+.accordion-content.open { max-height: 1200px; padding: 20px; }
 
 /* الأزرار */
-.btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.2s;
-    text-align: center;
-}
-
+.btn { padding: 12px 24px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
 .btn-blue { background: #2563eb; color: white; }
-.btn-blue:hover { background: #1d4ed8; }
-.btn-red { background: #dc2626; color: white; }
-.btn-red:hover { background: #b91c1c; }
-.btn-gray { background: #4b5563; color: white; }
-.btn-gray:hover { background: #374151; }
+.btn-red { background: #ef4444; color: white; }
+.btn-gray { background: #64748b; color: white; }
+.btn:hover { opacity: 0.9; }
 
 @media print {
     body * { visibility: hidden; }
