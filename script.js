@@ -3,12 +3,12 @@ import { getFirestore, collection, onSnapshot, doc, deleteDoc, getDoc, setDoc, a
 
 // --- إعدادات Firebase (استخدم بياناتك هنا) ---
 const firebaseConfig = {
-    apiKey: "AIzaSy...",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "...",
-    appId: "..."
+    apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
+    authDomain: "my-car123.firebaseapp.com",
+    projectId: "my-car123",
+    storageBucket: "my-car123.firebasestorage.app",
+    messagingSenderId: "731889650556",
+    appId: "1:731889650556:web:9c1fb521647131f48db2f9"
 };
 
 const app = initializeApp(firebaseConfig);
