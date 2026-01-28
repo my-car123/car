@@ -1,4 +1,4 @@
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDocs, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDocs, serverTimestamp, getDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const db = getFirestore();
 const driversRef = collection(db, "drivers");
@@ -22,12 +22,11 @@ window.switchTab = (tabId) => {
     } else {
         btnCars.className = 'btn btn-gray px-8 shadow-md';
         btnDrivers.className = 'btn btn-blue px-8 shadow-md';
-        // الافتراضي عند فتح تبويب السائقين هو القائمة
         switchDriverSubTab('list');
     }
 };
 
-// 2. التبديل بين القائمة والأرشيف (التبويبات الداخلية)
+// 2. التبديل بين القائمة والأرشيف (التبويبات الداخلية للسائقين)
 window.switchDriverSubTab = (subTab) => {
     const listContent = document.getElementById('driverListContent');
     const historyContent = document.getElementById('driverHistoryContent');
@@ -64,11 +63,11 @@ window.addNewDriver = async () => {
         });
         document.getElementById('driverName').value = "";
         document.getElementById('driverPhone').value = "";
-        alert("تمت الإضافة");
+        alert("تمت إضافة السائق بنجاح");
     } catch (e) { alert("خطأ في الحفظ"); }
 };
 
-// 4. عرض السائقين (بطاقات مطوية)
+// 4. عرض السائقين (بطاقات مطوية مع أرشيف شخصي)
 window.loadDrivers = () => {
     const q = query(driversRef, orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -81,15 +80,22 @@ window.loadDrivers = () => {
             const id = docSnap.id;
             const card = `
                 <div class="bg-white rounded-xl card-shadow border-r-4 border-blue-600 overflow-hidden mb-3">
-                    <div onclick="toggleDrAccordion('${id}')" class="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center">
+                    <div onclick="toggleDrAccordion('${id}', '${d.name}')" class="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center">
                         <h3 class="font-bold text-lg text-blue-900">${d.name}</h3>
-                        <span class="text-blue-500 font-mono text-sm">التفاصيل ▾</span>
+                        <span class="text-blue-500 font-mono text-xs">عرض الملف ▾</span>
                     </div>
                     <div id="dr-content-${id}" class="hidden p-4 border-t bg-gray-50 transition-all">
-                        <div class="mb-3 text-gray-600 font-mono text-center font-bold">${toEn(d.phone)}</div>
+                        <div class="mb-4 text-center">
+                            <p class="text-gray-600 font-mono font-bold">${toEn(d.phone)}</p>
+                        </div>
+                        
+                        <div id="dr-history-${id}" class="mb-4 p-3 bg-white rounded-lg border border-blue-100 max-h-32 overflow-y-auto">
+                            <p class="text-[10px] text-gray-400 italic">جاري تحميل سجل العهد...</p>
+                        </div>
+
                         <div class="flex gap-2 mb-4">
-                            <button onclick="window.location.href='tel:${d.phone}'" class="btn btn-blue flex-1 !py-2 text-sm">📞 اتصال</button>
-                            <button onclick="window.location.href='https://wa.me/${d.phone.replace(/\+/g,'')}'" class="btn bg-green-600 text-white flex-1 !py-2 text-sm">📱 واتساب</button>
+                            <button onclick="window.location.href='tel:${d.phone}'" class="btn btn-blue flex-1 !py-2 text-xs">📞 اتصال</button>
+                            <button onclick="window.location.href='https://wa.me/${d.phone.replace(/\+/g,'')}'" class="btn bg-green-600 text-white flex-1 !py-2 text-xs">📱 واتساب</button>
                         </div>
                         <div class="flex justify-around border-t pt-2">
                             <button onclick="editDriver('${id}', '${d.name}', '${d.phone}')" class="text-blue-600 font-bold text-xs">تعديل</button>
@@ -102,12 +108,61 @@ window.loadDrivers = () => {
     });
 };
 
-window.toggleDrAccordion = (id) => {
+// تحميل سجل السائق الشخصي عند فتح البطاقة
+window.toggleDrAccordion = async (id, driverName) => {
     const el = document.getElementById(`dr-content-${id}`);
-    if(el) el.classList.toggle('hidden');
+    if(!el) return;
+    el.classList.toggle('hidden');
+
+    if(!el.classList.contains('hidden')){
+        const historyDiv = document.getElementById(`dr-history-${id}`);
+        const q = query(historyRef, where("driverName", "==", driverName), orderBy("actionDate", "desc"));
+        const snap = await getDocs(q);
+        
+        if(snap.empty) {
+            historyDiv.innerHTML = "<p class='text-[10px] text-gray-400 text-center'>لا يوجد سجل عهد سابقة</p>";
+            return;
+        }
+
+        historyDiv.innerHTML = "<p class='text-[10px] font-bold text-blue-700 mb-1 border-b'>سجل العهد المستلمة:</p>";
+        snap.forEach(doc => {
+            const h = doc.data();
+            const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleDateString('en-GB') : '...';
+            historyDiv.innerHTML += `
+                <div class="flex justify-between text-[10px] py-1 border-b border-gray-50">
+                    <span class="font-bold text-gray-700">${h.carPlate}</span>
+                    <span class="text-gray-400">${toEn(date)}</span>
+                </div>`;
+        });
+    }
 };
 
-// 5. سجل الأرشفة (بطاقات مطوية)
+// 5. تحميل سجل المركبة (يستدعى من index.html عند فتح بطاقة السيارة)
+window.loadCarHistory = async (carId) => {
+    const historyDiv = document.getElementById(`car-history-${carId}`);
+    if(!historyDiv) return;
+
+    const q = query(historyRef, where("carId", "==", carId), orderBy("actionDate", "desc"));
+    const snap = await getDocs(q);
+
+    if(snap.empty) {
+        historyDiv.innerHTML = "<p class='text-xs text-gray-400 text-center'>لا يوجد مستخدمين سابقين مسجلين</p>";
+        return;
+    }
+
+    historyDiv.innerHTML = "<p class='text-xs font-bold text-orange-700 mb-2 border-b'>سجل مستخدمي المركبة:</p>";
+    snap.forEach(doc => {
+        const h = doc.data();
+        const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleDateString('en-GB', {hour:'2-digit', minute:'2-digit', hour12:true}) : '...';
+        historyDiv.innerHTML += `
+            <div class="flex justify-between items-center text-xs py-1 border-b border-orange-50">
+                <span class="font-bold text-blue-900">${h.driverName}</span>
+                <span class="text-[10px] text-gray-500 font-mono">${toEn(date)}</span>
+            </div>`;
+    });
+};
+
+// 6. سجل الأرشفة العام (بطاقات مطوية)
 window.loadTransferHistory = () => {
     const q = query(historyRef, orderBy("actionDate", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -161,7 +216,7 @@ window.editDriver = async (id, oldName, oldPhone) => {
 };
 
 window.deleteDriver = async (id) => {
-    if (confirm("هل أنت متأكد؟")) await deleteDoc(doc(db, "drivers", id));
+    if (confirm("هل أنت متأكد من حذف السائق؟")) await deleteDoc(doc(db, "drivers", id));
 };
 
 window.openAssignDriver = async (carId) => {
@@ -170,13 +225,13 @@ window.openAssignDriver = async (carId) => {
     select.innerHTML = '<option value="">جاري التحميل...</option>';
     document.getElementById('driverAssignModal').classList.remove('hidden');
     const snapshot = await getDocs(query(driversRef, orderBy("name", "asc")));
-    select.innerHTML = '<option value="">-- اختر السائق --</option>';
+    select.innerHTML = '<option value="">-- اختر السائق المستلم --</option>';
     snapshot.forEach(doc => { select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`; });
 };
 
 window.closeAssignModal = () => { document.getElementById('driverAssignModal').classList.add('hidden'); currentCarId = null; };
 
-// التحقق من المتعهد الحالي قبل النقل
+// التحقق من المتعهد الحالي وتسجيل الحركة
 window.confirmAssignDriver = async () => {
     const selectedDriver = document.getElementById('driverSelect').value;
     if (!selectedDriver || !currentCarId) return alert("يرجى اختيار السائق");
@@ -185,7 +240,6 @@ window.confirmAssignDriver = async () => {
         const carSnap = await getDoc(doc(db, "cars", currentCarId));
         const carData = carSnap.data();
 
-        // التعديل المطلوب: التحقق من اسم السائق
         if (carData.user === selectedDriver) {
             alert(`خطأ: السائق (${selectedDriver}) هو المتعهد الحالي لهذه السيارة بالفعل. لا يمكن التعهد مرتين لنفس المركبة.`);
             return;
@@ -198,7 +252,7 @@ window.confirmAssignDriver = async () => {
             driverName: selectedDriver,
             actionDate: serverTimestamp()
         });
-        alert("تم نقل العهدة بنجاح");
+        alert("تم نقل العهدة بنجاح وتوثيق الحركة بالسجلات");
         window.closeAssignModal();
-    } catch (e) { alert("حدث خطأ"); }
+    } catch (e) { alert("حدث خطأ أثناء نقل العهدة"); }
 };
