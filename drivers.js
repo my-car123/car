@@ -1,9 +1,9 @@
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDocs, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const db = getFirestore();
 const driversRef = collection(db, "drivers");
 const carsRef = collection(db, "cars");
-const historyRef = collection(db, "transfers"); // الكولكشن الجديد للسجلات التاريخية
+const historyRef = collection(db, "transfers"); // الكولكشن الخاص بالسجلات التاريخية
 
 let currentCarId = null;
 
@@ -22,6 +22,7 @@ window.switchTab = (tabId) => {
         btnCars.className = 'btn btn-gray px-8 shadow-md';
         btnDrivers.className = 'btn btn-blue px-8 shadow-md';
         window.loadDrivers();
+        window.loadTransferHistory(); // تحميل سجل العهدة عند فتح التبويب
     }
 };
 
@@ -48,7 +49,7 @@ window.addNewDriver = async () => {
     }
 };
 
-// 3. عرض قائمة السائقين
+// 3. عرض قائمة السائقين مع أزرار الإدارة (تعديل وحذف)
 window.loadDrivers = () => {
     const q = query(driversRef, orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -58,6 +59,7 @@ window.loadDrivers = () => {
         
         snapshot.forEach((docSnap) => {
             const driver = docSnap.data();
+            const id = docSnap.id;
             const card = `
                 <div class="bg-white p-5 rounded-xl card-shadow border-r-4 border-blue-600 transition-all hover:scale-[1.02]">
                     <div class="flex justify-between items-start mb-3">
@@ -65,8 +67,12 @@ window.loadDrivers = () => {
                         <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">سائق نشط</span>
                     </div>
                     <p class="text-gray-600 mb-2 font-medium">📞 ${driver.phone}</p>
+                    <div class="flex gap-4 mt-3 border-t pt-2">
+                        <button onclick="editDriver('${id}', '${driver.name}', '${driver.phone}')" class="text-blue-600 font-bold text-sm hover:underline">تعديل</button>
+                        <button onclick="deleteDriver('${id}')" class="text-red-600 font-bold text-sm hover:underline">حذف</button>
+                    </div>
                     <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                        <span class="text-xs text-gray-400">تاريخ الانضمام: ${driver.createdAt ? new Date(driver.createdAt.seconds * 1000).toLocaleDateString() : '..'}</span>
+                        <span class="text-xs text-gray-400">تاريخ الانضمام: ${driver.createdAt ? new Date(driver.createdAt.seconds * 1000).toLocaleDateString('ar-EG') : '..'}</span>
                         <button onclick="window.location.href='tel:${driver.phone}'" class="text-blue-600 font-bold text-sm">اتصال سريع</button>
                     </div>
                 </div>`;
@@ -75,7 +81,60 @@ window.loadDrivers = () => {
     });
 };
 
-// 4. فتح نافذة تبديل العهدة
+// 4. وظيفة تعديل بيانات السائق
+window.editDriver = async (id, oldName, oldPhone) => {
+    const newName = prompt("تعديل اسم السائق:", oldName);
+    const newPhone = prompt("تعديل رقم الهاتف:", oldPhone);
+    
+    if (newName && newPhone) {
+        try {
+            const driverDocRef = doc(db, "drivers", id);
+            await updateDoc(driverDocRef, {
+                name: newName,
+                phone: newPhone
+            });
+            alert("تم تحديث بيانات السائق بنجاح");
+        } catch (error) {
+            alert("حدث خطأ أثناء التحديث");
+        }
+    }
+};
+
+// 5. وظيفة حذف السائق
+window.deleteDriver = async (id) => {
+    if (confirm("هل أنت متأكد من حذف هذا السائق من الأسطول؟")) {
+        try {
+            await deleteDoc(doc(db, "drivers", id));
+            alert("تم حذف السائق بنجاح");
+        } catch (error) {
+            alert("حدث خطأ أثناء الحذف");
+        }
+    }
+};
+
+// 6. عرض سجل حركة العهدة (الأرشفة)
+window.loadTransferHistory = () => {
+    const q = query(historyRef, orderBy("actionDate", "desc"));
+    onSnapshot(q, (snapshot) => {
+        const list = document.getElementById('transferHistoryList');
+        if(!list) return;
+        list.innerHTML = "";
+        
+        snapshot.forEach((docSnap) => {
+            const h = docSnap.data();
+            const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('ar-EG') : '...';
+            const row = `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="p-3 text-sm text-gray-600">${date}</td>
+                    <td class="p-3 font-bold text-blue-700">${h.carPlate}</td>
+                    <td class="p-3 text-gray-800">${h.driverName}</td>
+                </tr>`;
+            list.innerHTML += row;
+        });
+    });
+};
+
+// 7. فتح نافذة تبديل العهدة
 window.openAssignDriver = async (carId) => {
     currentCarId = carId;
     const select = document.getElementById('driverSelect');
@@ -94,13 +153,13 @@ window.openAssignDriver = async (carId) => {
     }
 };
 
-// 5. إغلاق النافذة
+// 8. إغلاق نافذة تبديل العهدة
 window.closeAssignModal = () => {
     document.getElementById('driverAssignModal').classList.add('hidden');
     currentCarId = null;
 };
 
-// 6. العملية الكبرى: تحديث السيارة + إنشاء سجل تاريخي
+// 9. العملية الكبرى: تحديث السيارة + إنشاء سجل تاريخي
 window.confirmAssignDriver = async () => {
     const select = document.getElementById('driverSelect');
     const selectedDriver = select.value;
@@ -109,8 +168,8 @@ window.confirmAssignDriver = async () => {
 
     try {
         // أ. جلب بيانات السيارة الحالية للحصول على رقم اللوحة للسجل
-        const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
         const carSnap = await getDoc(doc(db, "cars", currentCarId));
+        if (!carSnap.exists()) return alert("السيارة غير موجودة");
         const carData = carSnap.data();
 
         // ب. تحديث السيارة الحالية
@@ -123,7 +182,7 @@ window.confirmAssignDriver = async () => {
         // ج. إضافة السجل في كولكشن transfers (السجل التاريخي)
         await addDoc(historyRef, {
             carId: currentCarId,
-            carPlate: carData.plateNumber + " " + carData.plateCode,
+            carPlate: (carData.plateNumber + " " + carData.plateCode),
             driverName: selectedDriver,
             actionDate: serverTimestamp(),
             actionType: "استلام عهدة"
