@@ -157,28 +157,16 @@
 
         window.login = () => signInWithPopup(auth, provider);
 
-                onAuthStateChanged(auth, (user) => {
-            // قائمة المديرين المسموح لهم
-            const authorizedEmails = [
-                "saad323m@gmail.com",
-                "p.my123.car@gmail.com",
-                "n2.saad113@gmail.com"
-            ];
-
-            if (user && authorizedEmails.includes(user.email)) {
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email === "saad323m@gmail.com") {
                 document.getElementById('app').classList.remove('hidden');
-                document.getElementById('loginBtn').innerText = "تسجيل الخروج";
+                document.getElementById('loginBtn').innerText = "خروج";
                 loadCars();
             } else {
                 document.getElementById('app').classList.add('hidden');
                 document.getElementById('loginBtn').innerText = "دخول الأدمن";
-                if(user) {
-                    alert("عذراً، هذا الحساب ليس لديه صلاحية الوصول.");
-                    auth.signOut();
-                }
             }
         });
-
 
         window.toggleModal = (id) => {
             const m = document.getElementById(id);
