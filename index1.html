@@ -104,10 +104,12 @@
                 <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الانتهاء</h3>
                 <p id="expiryAlerts" class="text-3xl font-bold text-red-600">0</p>
             </div>
+            
             <button onclick="showCarsList()" class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-green-500 hover:bg-green-50 transition-colors">
                 <h3 class="text-green-600 mb-2 font-bold text-xl">عرض السيارات</h3>
                 <p class="text-sm text-gray-500">فتح قائمة البيانات الكاملة</p>
             </button>
+
             <button onclick="toggleModal('carModal')" class="btn btn-blue h-full flex items-center justify-center text-xl">إضافة سيارة جديدة</button>
         </section>
 
@@ -158,7 +160,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -184,16 +186,13 @@
             });
         }, 1000);
 
-        // تعديل الدخول ليشمل الـ Persistence
         window.handleLogin = async () => {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
             const remember = document.getElementById('rememberMe').checked;
-            
             if(!email || !pass) return alert("يرجى إدخال البريد وكلمة المرور");
             
             try {
-                // تحديد نوع الثبات (دائم في المتصفح أو لجلسة واحدة)
                 await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
@@ -223,7 +222,6 @@
             }
         });
 
-        // وظيفة إظهار القائمة
         window.showCarsList = () => {
             const container = document.getElementById('carsContainer');
             container.classList.toggle('hidden');
@@ -245,14 +243,19 @@
         document.getElementById('carForm').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editDocId').value;
+            
+            const plateNum = document.getElementById('plateNumber').value.trim();
+            const plateCode = document.getElementById('plateCode').value.trim();
+            const vin = document.getElementById('vin').value.trim();
+
             const carData = {
-                plateNumber: document.getElementById('plateNumber').value,
-                plateCode: document.getElementById('plateCode').value,
+                plateNumber: plateNum,
+                plateCode: plateCode,
                 emirate: document.getElementById('emirate').value,
                 ownerName: document.getElementById('ownerName').value,
                 user: document.getElementById('userField').value,
                 type: document.getElementById('type').value,
-                vin: document.getElementById('vin').value,
+                vin: vin,
                 year: document.getElementById('year').value,
                 expiryLicense: document.getElementById('expiryLicense').value,
                 expiryInsurance: document.getElementById('expiryInsurance').value,
@@ -261,20 +264,33 @@
             };
 
             try {
+                const carsRef = collection(db, "cars");
+                
+                // 1. تحقق تكرار اللوحة والرمز
+                const qPlate = query(carsRef, where("plateNumber", "==", plateNum), where("plateCode", "==", plateCode));
+                const plateSnap = await getDocs(qPlate);
+                if (plateSnap.docs.some(d => d.id !== editId)) {
+                    return alert("تنبيه: هذه اللوحة مسجلة مسبقاً بنفس الرمز!");
+                }
+
+                // 2. تحقق تكرار رقم القاعدة
+                if (vin !== "") {
+                    const qVin = query(carsRef, where("vin", "==", vin));
+                    const vinSnap = await getDocs(qVin);
+                    if (vinSnap.docs.some(d => d.id !== editId)) {
+                        return alert("تنبيه: رقم القاعدة (VIN) مسجل لسيارة أخرى!");
+                    }
+                }
+
                 if (editId) {
                     await updateDoc(doc(db, "cars", editId), carData);
                 } else {
                     await runTransaction(db, async (transaction) => {
                         const counterRef = doc(db, "settings", "counters");
                         const counterDoc = await transaction.get(counterRef);
-                        
-                        let nextId = 100; 
-                        if (counterDoc.exists()) {
-                            nextId = (counterDoc.data().lastId || 99) + 1;
-                        }
-                        
+                        let nextId = 100;
+                        if (counterDoc.exists()) { nextId = (counterDoc.data().lastId || 99) + 1; }
                         transaction.set(counterRef, { lastId: nextId }, { merge: true });
-                        // التعديل المطلوب: AL MASAOOD_
                         carData.customId = "AL MASAOOD_" + nextId;
                         carData.createdAt = new Date();
                         const newCarRef = doc(collection(db, "cars"));
@@ -284,7 +300,7 @@
                 toggleModal('carModal');
             } catch (err) { 
                 console.error(err);
-                alert("حدث خطأ في حفظ البيانات!"); 
+                alert("حدث خطأ في معالجة البيانات"); 
             }
         };
 
