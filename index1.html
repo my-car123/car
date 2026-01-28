@@ -16,7 +16,7 @@
         .btn-red { background-color: #dc2626; color: white; }
         .btn-gray { background-color: #64748b; color: white; }
 
-        /* تصميم اللوحة */
+        /* تصميم لوحة أرقام الإمارات */
         .uae-plate { display: inline-flex; align-items: center; border: 2px solid #333; border-radius: 6px; background: white; overflow: hidden; height: 45px; font-family: Arial, sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .plate-code { background: #dc2626; color: white; padding: 0 12px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; border-left: 2px solid #333; }
         .plate-number { color: #1a1a1a; padding: 0 15px; font-size: 1.6rem; font-weight: 800; letter-spacing: 1px; }
@@ -60,8 +60,8 @@
 
     <div id="carModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow">
-            <h2 id="modalTitle" class="text-3xl font-bold mb-6 text-blue-700 border-b pb-2">إضافة سيارة جديدة</h2>
-            <form id="carForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h2 id="modalTitle" class="text-3xl font-bold mb-6 text-blue-700 border-b pb-2 text-right">إضافة سيارة جديدة</h2>
+            <form id="carForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-right" dir="rtl">
                 <input type="hidden" id="editDocId">
                 <div><label class="block mb-2 font-bold text-lg">رقم اللوحة</label><input type="text" id="plateNumber" required></div>
                 <div><label class="block mb-2 font-bold text-lg">رمز اللوحة</label><input type="text" id="plateCode" required></div>
@@ -100,74 +100,34 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' }); // إجبار جوجل على إظهار اختيار الحسابات
+        provider.setCustomParameters({ prompt: 'select_account' });
 
-        // تحديث الوقت
+        // الوقت
         setInterval(() => {
-            const now = new Date();
-            document.getElementById('currentDateTime').innerText = now.toLocaleString('en-GB', { 
+            document.getElementById('currentDateTime').innerText = new Date().toLocaleString('en-GB', { 
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
         }, 1000);
 
-        // دالة تسجيل الدخول
-        async function handleLogin() {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Login Error:", error);
-                alert("حدث خطأ أثناء تسجيل الدخول");
-            }
-        }
-
-        // دالة تسجيل الخروج
-        async function handleLogout() {
-            try {
-                await signOut(auth);
-                location.reload(); // إعادة تحميل الصفحة لتنظيف الكاش
-            } catch (error) {
-                alert("تعذر تسجيل الخروج");
-            }
-        }
-
-        // مراقبة حالة المستخدم
+        // مراقبة الدخول
         onAuthStateChanged(auth, (user) => {
-            const authorizedEmails = [
-                "saad323m@gmail.com",
-                "p.my123.car@gmail.com",
-                "n2.saad113@gmail.com"
-            ];
-
+            const authorizedEmails = ["saad323m@gmail.com", "p.my123.car@gmail.com", "n2.saad113@gmail.com"];
             const authBtn = document.getElementById('authBtn');
             
             if (user && authorizedEmails.includes(user.email)) {
                 document.getElementById('app').classList.remove('hidden');
                 authBtn.innerText = "تسجيل الخروج";
-                authBtn.onclick = handleLogout;
+                authBtn.onclick = () => signOut(auth).then(() => location.reload());
                 loadCars();
             } else {
                 document.getElementById('app').classList.add('hidden');
                 authBtn.innerText = "دخول الأدمن";
-                authBtn.onclick = handleLogin;
-                if(user) {
-                    alert("عذراً، هذا الحساب ليس لديه صلاحية الوصول.");
-                    signOut(auth);
-                }
+                authBtn.onclick = () => signInWithPopup(auth, provider);
+                if(user) { alert("صلاحية مرفوضة"); signOut(auth); }
             }
         });
 
-        // بقية الدوال (toggleModal, carForm.onsubmit, loadCars, editCar, etc.)
-        // سأضعها بشكل مختصر لضمان عمل الكود
-        
-        window.toggleModal = (id) => {
-            const m = document.getElementById(id);
-            m.classList.toggle('hidden');
-            if(m.classList.contains('hidden')) {
-                document.getElementById('carForm').reset();
-                document.getElementById('editDocId').value = "";
-            }
-        };
-
+        // حفظ وتعديل
         document.getElementById('carForm').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editDocId').value;
@@ -201,7 +161,7 @@
                     });
                 }
                 toggleModal('carModal');
-            } catch (err) { alert("حدث خطأ في النظام! تأكد من صلاحيات الرولز"); }
+            } catch (err) { alert("خطأ! تأكد من القواعد (Rules)"); }
         };
 
         function loadCars() {
@@ -225,12 +185,19 @@
                             </div>
                             <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-right">
+                                    <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate}</strong></div>
+                                    <div><p class="text-xs text-gray-400">نوع السيارة</p><strong>${car.type}</strong></div>
                                     <div><p class="text-xs text-gray-400">رقم القاعدة</p><strong>${car.vin || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">سنة الصنع</p><strong>${car.year || '-'}</strong></div>
                                     <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong>${car.expiryLicense}</strong></div>
                                     <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong>${car.expiryInsurance}</strong></div>
+                                    <div class="col-span-2"><p class="text-xs text-gray-400">ملاحظات</p><strong>${car.notes || '-'}</strong></div>
                                 </div>
-                                <div class="flex gap-2"><button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button><button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button></div>
+                                <div class="flex gap-2">
+                                    <button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1">طباعة</button>
+                                    <button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button>
+                                </div>
                             </div>
                         </div>`;
                 });
@@ -239,9 +206,32 @@
             });
         }
 
-        window.checkExpiry = (dateStr) => {
-            const diffDays = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
-            return diffDays <= 15;
+        window.instantPrint = (car) => {
+            const printArea = document.getElementById('printArea');
+            printArea.innerHTML = `
+                <div style="padding: 30px; border: 5px solid #2563eb; border-radius: 20px; direction: rtl; text-align: center; background: white;">
+                    <h1 style="color: #2563eb; font-size: 24px;">بيانات المركبة الرسمية</h1>
+                    <div class="uae-plate" style="transform: scale(1.4); margin: 25px 0;"><div class="plate-code">${car.plateCode}</div><div class="plate-number">${car.plateNumber}</div></div>
+                    <h2 style="font-size: 22px; margin-bottom: 20px;">${car.ownerName}</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: right; font-size: 18px;">
+                        <div style="background: #f0f7ff; padding: 10px;"><b>الرقم التسلسلي:</b> ${car.customId}</div>
+                        <div style="background: #f0f7ff; padding: 10px;"><b>الإمارة:</b> ${car.emirate}</div>
+                        <div style="border-bottom: 1px solid #ddd; padding: 10px;"><b>رقم القاعدة:</b> ${car.vin || '-'}</div>
+                        <div style="border-bottom: 1px solid #ddd; padding: 10px;"><b>سنة الصنع:</b> ${car.year || '-'}</div>
+                        <div style="border: 1px solid #ff0000; padding: 10px;"><b>انتهاء الترخيص:</b> ${car.expiryLicense}</div>
+                        <div style="border: 1px solid #ff0000; padding: 10px;"><b>انتهاء التأمين:</b> ${car.expiryInsurance}</div>
+                    </div>
+                </div>`;
+            window.print();
+        };
+
+        window.toggleModal = (id) => {
+            document.getElementById(id).classList.toggle('hidden');
+            if(document.getElementById(id).classList.contains('hidden')) {
+                document.getElementById('carForm').reset();
+                document.getElementById('editDocId').value = "";
+                document.getElementById('modalTitle').innerText = "إضافة سيارة جديدة";
+            }
         };
 
         window.editCar = async (id) => {
@@ -250,21 +240,25 @@
             document.getElementById('editDocId').value = id;
             document.getElementById('plateNumber').value = data.plateNumber;
             document.getElementById('plateCode').value = data.plateCode;
+            document.getElementById('emirate').value = data.emirate;
             document.getElementById('ownerName').value = data.ownerName;
+            document.getElementById('userField').value = data.user || "";
+            document.getElementById('type').value = data.type || "";
             document.getElementById('vin').value = data.vin || "";
             document.getElementById('year').value = data.year || "";
             document.getElementById('expiryLicense').value = data.expiryLicense;
             document.getElementById('expiryInsurance').value = data.expiryInsurance;
+            document.getElementById('notes').value = data.notes || "";
+            document.getElementById('modalTitle').innerText = "تعديل بيانات المركبة";
             toggleModal('carModal');
         };
 
-        window.deleteCar = async (id) => { if (confirm("حذف؟")) await deleteDoc(doc(db, "cars", id)); };
+        window.deleteCar = async (id) => { if(confirm("حذف هذه السيارة؟")) await deleteDoc(doc(db, "cars", id)); };
         window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
+        window.checkExpiry = (d) => Math.ceil((new Date(d) - new Date())/(1000*60*60*24)) <= 15;
         window.filterCars = () => {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.car-card').forEach(card => {
-                card.style.display = card.getAttribute('data-search').toLowerCase().includes(term) ? 'block' : 'none';
-            });
+            const t = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.car-card').forEach(c => c.style.display = c.getAttribute('data-search').toLowerCase().includes(t) ? 'block' : 'none');
         };
     </script>
 </body>
