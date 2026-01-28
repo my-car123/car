@@ -23,9 +23,9 @@
         .btn-orange { background-color: #f59e0b; color: white; }
         
         /* تصميم لوحة السيارة */
-        .uae-plate { display: inline-flex; align-items: center; border: 2px solid #333; border-radius: 6px; background: white; overflow: hidden; height: 50px; font-family: Arial, sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .plate-code { background: #dc2626; color: white; padding: 0 15px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; border-left: 2px solid #333; }
-        .plate-number { color: #1a1a1a; padding: 0 20px; font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; }
+        .uae-plate { display: inline-flex; align-items: center; border: 2px solid #333; border-radius: 6px; background: white; overflow: hidden; height: 45px; font-family: Arial, sans-serif; }
+        .plate-code { background: #dc2626; color: white; padding: 0 10px; height: 100%; display: flex; align-items: center; font-weight: bold; border-left: 2px solid #333; }
+        .plate-number { color: #1a1a1a; padding: 0 15px; font-size: 1.4rem; font-weight: 800; }
         
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
@@ -36,11 +36,11 @@
         @media (min-width: 768px) { .info-grid { grid-template-columns: repeat(3, 1fr); } }
         
         .info-item { background: #f1f5f9; padding: 10px; border-radius: 8px; border-right: 4px solid #2563eb; }
-        .info-label { font-size: 0.75rem; color: #64748b; font-weight: bold; display: block; }
-        .info-value { font-size: 1rem; color: #1e293b; font-weight: 700; word-break: break-all; }
+        .info-label { font-size: 0.7rem; color: #64748b; font-weight: bold; display: block; }
+        .info-value { font-size: 0.95rem; color: #1e293b; font-weight: 700; word-break: break-all; }
 
         footer { margin-top: auto; background: white; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; font-weight: bold; color: #64748b; }
-        @media print { body > * { display: none !important; } #printArea { display: block !important; width: 100% !important; } }
+        @media print { body > * { display: none !important; } #printArea { display: block !important; } }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -48,19 +48,13 @@
     <header class="bg-white p-4 rounded-xl card-shadow border-b-4 border-blue-600 mb-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-4">
-                <img src="icon.png" alt="Al Masaood Logo" class="h-20 w-auto object-contain">
-                <div class="hidden md:block h-12 w-1 bg-gray-200 rounded-full"></div>
+                <img src="icon.png" alt="Al Masaood Logo" class="h-20 w-auto">
                 <div id="currentDateTime" class="text-lg font-bold text-blue-800 font-mono"></div>
             </div>
-            <div id="loginSection" class="flex flex-col gap-2 w-full md:w-auto">
-                <div class="flex flex-wrap gap-2">
-                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" class="!p-2 !text-sm flex-1">
-                    <input type="password" id="loginPass" placeholder="كلمة المرور" class="!p-2 !text-sm flex-1 font-mono">
-                    <button onclick="handleLogin()" id="loginBtn" class="btn btn-blue !p-2 px-6">دخول</button>
-                </div>
-                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                    <input type="checkbox" id="rememberMe" class="w-4 h-4"> تذكرني
-                </label>
+            <div id="loginSection" class="flex flex-wrap gap-2">
+                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" class="!p-2 !text-sm">
+                <input type="password" id="loginPass" placeholder="كلمة المرور" class="!p-2 !text-sm">
+                <button onclick="handleLogin()" class="btn btn-blue !p-2 px-6">دخول</button>
             </div>
             <div id="userProfile" class="hidden flex items-center gap-4">
                 <span id="userEmailDisplay" class="font-bold text-green-700"></span>
@@ -70,13 +64,14 @@
     </header>
 
     <nav id="mainNav" class="hidden flex justify-center gap-4 mb-6">
-        <button onclick="switchTab('carsTab')" id="btnCarsTab" class="btn btn-blue px-8 shadow-md">إدارة السيارات</button>
-        <button onclick="switchTab('driversTab')" id="btnDriversTab" class="btn btn-gray px-8 shadow-md">إدارة السائقين</button>
+        <button onclick="switchTab('carsTab')" id="btnCarsTab" class="btn btn-blue px-8">إدارة السيارات</button>
+        <button onclick="switchTab('driversTab')" id="btnDriversTab" class="btn btn-gray px-8">إدارة السائقين</button>
     </nav>
 
     <main id="app" class="hidden flex-grow">
+        
         <section id="carsTab" class="tab-content">
-            <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-blue-500">
                     <h3 class="text-gray-500 mb-2 font-bold">إجمالي السيارات</h3>
                     <p id="totalCars" class="text-3xl font-bold font-mono">0</p>
@@ -85,62 +80,77 @@
                     <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الانتهاء</h3>
                     <p id="expiryAlerts" class="text-3xl font-bold text-red-600 font-mono">0</p>
                 </div>
-                <button onclick="showCarsList()" class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-green-500 hover:bg-green-50 transition-colors">
-                    <h3 class="text-green-600 mb-2 font-bold text-xl">عرض السيارات</h3>
-                    <p class="text-sm text-gray-500 font-mono font-bold italic">VIEW DATABASE</p>
+                <button onclick="showCarsList()" class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-green-500">
+                    <h3 class="text-green-600 mb-2 font-bold text-xl">عرض قاعدة البيانات</h3>
                 </button>
-                <button onclick="toggleModal('carModal')" class="btn btn-blue h-full flex items-center justify-center text-xl">إضافة سيارة جديدة</button>
-            </section>
+                <button onclick="toggleModal('carModal')" class="btn btn-blue h-full text-xl font-bold">إضافة سيارة جديدة</button>
+            </div>
 
             <div id="carsContainer" class="hidden">
-                <div class="search-box mb-6">
-                    <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث برقم اللوحة، الرمز، أو اسم المالك..." class="border-2 border-blue-600">
-                </div>
+                <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث باللوحة أو المالك..." class="mb-6 border-2 border-blue-600">
                 <div id="carsList" class="space-y-4"></div>
             </div>
         </section>
 
         <section id="driversTab" class="tab-content hidden">
-            <div id="driversList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            <div class="bg-white p-6 rounded-xl card-shadow mb-8 border-t-4 border-blue-700">
+                <h2 class="text-2xl font-bold mb-4 text-blue-700">إضافة سائق جديد</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="driverNameInput" placeholder="اسم السائق الكامل">
+                    <input type="text" id="driverPhoneInput" placeholder="رقم الجوال">
+                    <button onclick="addNewDriver()" class="btn btn-blue">حفظ السائق</button>
+                </div>
+            </div>
+            
+            <h2 class="text-xl font-bold mb-4 text-gray-700">قائمة السائقين الحاليين</h2>
+            <div id="driversList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                </div>
         </section>
     </main>
 
-    <footer>تطوير وتصميم: <span class="text-blue-600 font-mono">Mohamed Saad</span> &copy; 2026</footer>
-
     <div id="carModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow">
-            <h2 id="modalTitle" class="text-3xl font-bold mb-6 text-blue-700 border-b pb-2">بيانات السيارة</h2>
-            <form id="carForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 border-b pb-2">بيانات المركبة</h2>
+            <form id="carForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input type="hidden" id="editDocId">
-                <div><label class="block mb-2 font-bold text-lg">رقم اللوحة</label><input type="text" id="plateNumber" class="font-mono" required></div>
-                <div><label class="block mb-2 font-bold text-lg">رمز اللوحة</label><input type="text" id="plateCode" required></div>
-                <div><label class="block mb-2 font-bold text-lg">الإمارة</label>
-                    <input list="emirates" id="emirate">
-                    <datalist id="emirates">
-                        <option value="أبوظبي"><option value="دبي"><option value="الشارقة"><option value="عجمان"><option value="أم القيوين"><option value="رأس الخيمة"><option value="الفجيرة">
-                    </datalist>
-                </div>
-                <div><label class="block mb-2 font-bold text-lg">اسم المالك</label><input type="text" id="ownerName" required></div>
-                <div><label class="block mb-2 font-bold text-lg">المستخدم</label><input type="text" id="userField"></div>
-                <div><label class="block mb-2 font-bold text-lg">نوع السيارة</label><input type="text" id="type"></div>
-                <div><label class="block mb-2 font-bold text-lg">رقم القاعدة (VIN)</label><input type="text" id="vin" class="font-mono"></div>
-                <div><label class="block mb-2 font-bold text-lg">سنة الصنع</label><input type="number" id="year" class="font-mono"></div>
-                <div><label class="block mb-2 font-bold text-lg">انتهاء الترخيص</label><input type="date" id="expiryLicense" class="font-mono" required></div>
-                <div><label class="block mb-2 font-bold text-lg">انتهاء التأمين</label><input type="date" id="expiryInsurance" class="font-mono" required></div>
-                <div class="md:col-span-2"><label class="block mb-2 font-bold text-lg">ملاحظات</label><textarea id="notes" rows="3"></textarea></div>
-                <div class="md:col-span-2 flex gap-4 mt-6">
-                    <button type="submit" class="btn btn-blue flex-1 text-xl">حفظ</button>
-                    <button type="button" onclick="closeCarModal()" class="btn btn-gray flex-1 text-xl">إلغاء</button>
+                <div><label>رقم اللوحة</label><input type="text" id="plateNumber" required></div>
+                <div><label>رمز اللوحة</label><input type="text" id="plateCode" required></div>
+                <div><label>الإمارة</label><input type="text" id="emirate"></div>
+                <div><label>اسم المالك</label><input type="text" id="ownerName" required></div>
+                <div><label>المستخدم</label><input type="text" id="userField"></div>
+                <div><label>نوع السيارة</label><input type="text" id="type"></div>
+                <div><label>رقم القاعدة</label><input type="text" id="vin"></div>
+                <div><label>سنة الصنع</label><input type="number" id="year"></div>
+                <div><label>انتهاء الترخيص</label><input type="date" id="expiryLicense" required></div>
+                <div><label>انتهاء التأمين</label><input type="date" id="expiryInsurance" required></div>
+                <div class="md:col-span-2"><label>ملاحظات</label><textarea id="notes" rows="2"></textarea></div>
+                <div class="md:col-span-2 flex gap-2">
+                    <button type="submit" class="btn btn-blue flex-1">حفظ</button>
+                    <button type="button" onclick="toggleModal('carModal')" class="btn btn-gray flex-1">إلغاء</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="printArea" style="display: none;"></div>
+    <div id="assignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6">
+            <h2 class="text-xl font-bold mb-4">تبديل عهدة المركبة</h2>
+            <p id="assignCarInfo" class="mb-4 text-blue-600 font-bold"></p>
+            <label class="block mb-2">اختر المستلم الجديد:</label>
+            <select id="driverSelect" class="mb-6 w-full p-3 border rounded-lg"></select>
+            <div class="flex gap-2">
+                <button onclick="confirmAssignment()" class="btn btn-blue flex-1">تأكيد النقل</button>
+                <button onclick="toggleModal('assignModal')" class="btn btn-gray flex-1">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea" class="hidden"></div>
+    <footer>تطوير: Mohamed Saad &copy; 2026</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -157,155 +167,92 @@
         const auth = getAuth(app);
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
 
-        // تحديث الوقت
-        setInterval(() => {
-            const dt = document.getElementById('currentDateTime');
-            if(dt) dt.innerText = new Date().toLocaleString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-        }, 1000);
+        let currentAssigningCarId = null;
 
-        // تسجيل الدخول
+        // نظام تسجيل الدخول
         window.handleLogin = async () => {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
             try {
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
-            } catch (e) { alert("خطأ في بيانات الدخول"); }
+            } catch (e) { alert("خطأ في تسجيل الدخول"); }
         };
 
         window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
-            const appMain = document.getElementById('app');
-            const mainNav = document.getElementById('mainNav');
-            const loginSection = document.getElementById('loginSection');
-            const userProfile = document.getElementById('userProfile');
+            const appDiv = document.getElementById('app');
+            const nav = document.getElementById('mainNav');
             if (user && allowedAdmins.includes(user.email)) {
-                appMain.classList.remove('hidden');
-                mainNav.classList.remove('hidden');
-                loginSection.classList.add('hidden');
-                userProfile.classList.remove('hidden');
+                appDiv.classList.remove('hidden');
+                nav.classList.remove('hidden');
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('userProfile').classList.remove('hidden');
                 document.getElementById('userEmailDisplay').innerText = user.email;
                 loadCars();
+                loadDrivers();
             } else {
-                if(user) signOut(auth);
-                appMain.classList.add('hidden');
-                mainNav.classList.add('hidden');
-                loginSection.classList.remove('hidden');
-                userProfile.classList.add('hidden');
+                appDiv.classList.add('hidden');
+                nav.classList.add('hidden');
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('userProfile').classList.add('hidden');
             }
         });
 
-        // إدارة النوافذ
-        window.toggleModal = (id) => document.getElementById(id).classList.toggle('hidden');
-        window.closeCarModal = () => {
-            document.getElementById('carForm').reset();
-            document.getElementById('editDocId').value = "";
-            toggleModal('carModal');
-        };
-        window.showCarsList = () => document.getElementById('carsContainer').classList.toggle('hidden');
+        // إدارة التبويبات
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btnCarsTab').className = tabId === 'carsTab' ? 'btn btn-blue px-8' : 'btn btn-gray px-8';
+            document.getElementById('btnDriversTab').className = tabId === 'driversTab' ? 'btn btn-blue px-8' : 'btn btn-gray px-8';
         };
 
-        // فحص التواريخ
-        window.checkExpiry = (dateStr) => {
-            if(!dateStr) return false;
-            const diff = (new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24);
-            return diff <= 15;
-        };
+        window.toggleModal = (id) => document.getElementById(id).classList.toggle('hidden');
+        window.showCarsList = () => document.getElementById('carsContainer').classList.toggle('hidden');
 
-        // حفظ البيانات
-        document.getElementById('carForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('editDocId').value;
-            const carData = {
-                plateNumber: document.getElementById('plateNumber').value,
-                plateCode: document.getElementById('plateCode').value,
-                emirate: document.getElementById('emirate').value,
-                ownerName: document.getElementById('ownerName').value,
-                user: document.getElementById('userField').value,
-                type: document.getElementById('type').value,
-                vin: document.getElementById('vin').value,
-                year: document.getElementById('year').value,
-                expiryLicense: document.getElementById('expiryLicense').value,
-                expiryInsurance: document.getElementById('expiryInsurance').value,
-                notes: document.getElementById('notes').value,
-                updatedAt: new Date()
-            };
-
-            try {
-                if (editId) {
-                    await updateDoc(doc(db, "cars", editId), carData);
-                } else {
-                    await runTransaction(db, async (transaction) => {
-                        const counterRef = doc(db, "settings", "counters");
-                        const counterDoc = await transaction.get(counterRef);
-                        let nextId = counterDoc.exists() ? (counterDoc.data().lastId || 99) + 1 : 100;
-                        transaction.set(counterRef, { lastId: nextId }, { merge: true });
-                        carData.customId = "AL MASAOOD_" + nextId;
-                        carData.createdAt = new Date();
-                        const newCarRef = doc(collection(db, "cars"));
-                        transaction.set(newCarRef, carData);
-                    });
-                }
-                closeCarModal();
-            } catch (err) { alert("حدث خطأ أثناء الحفظ"); }
-        };
-
-        // تحميل وعرض السيارات (تعديل الحقول المطلوبة هنا)
-        function loadCars() {
+        // إدارة السيارات
+        window.loadCars = () => {
             onSnapshot(query(collection(db, "cars"), orderBy("createdAt", "desc")), (snapshot) => {
                 const list = document.getElementById('carsList');
                 list.innerHTML = "";
                 let total = 0, alerts = 0;
-
                 snapshot.forEach((docSnap) => {
                     const car = docSnap.data(), id = docSnap.id;
                     total++;
                     const isExpiring = checkExpiry(car.expiryLicense) || checkExpiry(car.expiryInsurance);
-                    if (isExpiring) alerts++;
+                    if(isExpiring) alerts++;
 
                     list.innerHTML += `
-                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode}">
-                            <div onclick="toggleAccordion('${id}')" class="p-4 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b relative">
-                                <span class="text-blue-600 font-bold mb-2 text-xs font-mono bg-blue-50 px-3 py-1 rounded-full">${car.customId}</span>
+                        <div class="car-card ${isExpiring ? 'alert-border' : ''}" data-search="${car.ownerName} ${car.plateNumber}">
+                            <div onclick="toggleAccordion('${id}')" class="p-4 flex flex-col items-center cursor-pointer border-b">
+                                <span class="text-blue-600 font-bold mb-1 text-xs">${car.customId}</span>
                                 <div class="uae-plate mb-2">
                                     <div class="plate-code">${car.plateCode}</div>
                                     <div class="plate-number font-mono">${car.plateNumber}</div>
                                 </div>
-                                <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
-                                <div class="text-sm text-gray-500">${car.type || ''} - ${car.emirate || ''}</div>
+                                <div class="font-bold">${car.ownerName}</div>
                             </div>
-
-                            <div id="content-${id}" class="accordion-content p-6 bg-slate-50">
+                            <div id="content-${id}" class="accordion-content p-4 bg-gray-50">
                                 <div class="info-grid">
-                                    <div class="info-item"><span class="info-label">العنوان المميز</span><span class="info-value text-blue-600">${car.customId}</span></div>
+                                    <div class="info-item"><span class="info-label">المعرف النظامي</span><span class="info-value">${car.customId}</span></div>
                                     <div class="info-item"><span class="info-label">رقم اللوحة</span><span class="info-value">${car.plateNumber}</span></div>
                                     <div class="info-item"><span class="info-label">رمز اللوحة</span><span class="info-value">${car.plateCode}</span></div>
                                     <div class="info-item"><span class="info-label">الإمارة</span><span class="info-value">${car.emirate || '-'}</span></div>
                                     <div class="info-item"><span class="info-label">اسم المالك</span><span class="info-value">${car.ownerName}</span></div>
-                                    <div class="info-item"><span class="info-label">المستخدم</span><span class="info-value text-green-700">${car.user || 'غير محدد'}</span></div>
+                                    <div class="info-item"><span class="info-label">المستخدم الحالي</span><span class="info-value text-blue-700">${car.user || '-'}</span></div>
                                     <div class="info-item"><span class="info-label">نوع السيارة</span><span class="info-value">${car.type || '-'}</span></div>
                                     <div class="info-item"><span class="info-label">رقم القاعدة</span><span class="info-value font-mono text-xs">${car.vin || '-'}</span></div>
                                     <div class="info-item"><span class="info-label">سنة الصنع</span><span class="info-value">${car.year || '-'}</span></div>
-                                    <div class="info-item ${checkExpiry(car.expiryLicense) ? 'bg-red-100 border-red-500' : ''}">
-                                        <span class="info-label">انتهاء الترخيص</span>
-                                        <span class="info-value font-mono">${car.expiryLicense}</span>
-                                    </div>
-                                    <div class="info-item ${checkExpiry(car.expiryInsurance) ? 'bg-red-100 border-red-500' : ''}">
-                                        <span class="info-label">انتهاء التأمين</span>
-                                        <span class="info-value font-mono">${car.expiryInsurance}</span>
-                                    </div>
-                                    <div class="info-item"><span class="info-label">ملاحظات</span><span class="info-value text-sm">${car.notes || '-'}</span></div>
+                                    <div class="info-item"><span class="info-label">انتهاء الترخيص</span><span class="info-value">${car.expiryLicense}</span></div>
+                                    <div class="info-item"><span class="info-label">انتهاء التأمين</span><span class="info-value">${car.expiryInsurance}</span></div>
+                                    <div class="info-item"><span class="info-label">ملاحظات</span><span class="info-value text-xs">${car.notes || '-'}</span></div>
                                 </div>
-
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <button onclick="event.stopPropagation(); openAssignDriver('${id}')" class="btn btn-orange text-sm">تبديل العهدة</button>
-                                    <button onclick="event.stopPropagation(); editCar('${id}')" class="btn btn-blue text-sm">تعديل</button>
-                                    <button onclick='event.stopPropagation(); instantPrint(${JSON.stringify(car)})' class="btn btn-gray text-sm">طباعة</button>
-                                    <button onclick="event.stopPropagation(); deleteCar('${id}')" class="btn btn-red text-sm">حذف</button>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    <button onclick="openAssignModal('${id}', '${car.plateNumber}')" class="btn btn-orange text-sm">تبديل عهدة</button>
+                                    <button onclick="editCar('${id}')" class="btn btn-blue text-sm">تعديل</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray text-sm">طباعة</button>
+                                    <button onclick="deleteCar('${id}')" class="btn btn-red text-sm">حذف</button>
                                 </div>
                             </div>
                         </div>`;
@@ -313,78 +260,104 @@
                 document.getElementById('totalCars').innerText = total;
                 document.getElementById('expiryAlerts').innerText = alerts;
             });
-        }
-
-        window.toggleAccordion = (id) => {
-            const el = document.getElementById(`content-${id}`);
-            const isOpen = el.classList.contains('open');
-            document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
-            if(!isOpen) el.classList.add('open');
         };
 
-        window.editCar = async (id) => {
-            const docSnap = await getDoc(doc(db, "cars", id));
-            if(docSnap.exists()){
-                const d = docSnap.data();
-                document.getElementById('editDocId').value = id;
-                document.getElementById('plateNumber').value = d.plateNumber || '';
-                document.getElementById('plateCode').value = d.plateCode || '';
-                document.getElementById('emirate').value = d.emirate || '';
-                document.getElementById('ownerName').value = d.ownerName || '';
-                document.getElementById('userField').value = d.user || '';
-                document.getElementById('type').value = d.type || '';
-                document.getElementById('vin').value = d.vin || '';
-                document.getElementById('year').value = d.year || '';
-                document.getElementById('expiryLicense').value = d.expiryLicense || '';
-                document.getElementById('expiryInsurance').value = d.expiryInsurance || '';
-                document.getElementById('notes').value = d.notes || '';
-                document.getElementById('modalTitle').innerText = "تعديل بيانات مركبة";
-                toggleModal('carModal');
-            }
+        // إدارة السائقين
+        window.addNewDriver = async () => {
+            const name = document.getElementById('driverNameInput').value;
+            const phone = document.getElementById('driverPhoneInput').value;
+            if(!name) return alert("يرجى إدخال اسم السائق");
+            await addDoc(collection(db, "drivers"), { name, phone, createdAt: new Date() });
+            document.getElementById('driverNameInput').value = "";
+            document.getElementById('driverPhoneInput').value = "";
         };
 
-        window.deleteCar = async (id) => {
-            if(confirm("هل أنت متأكد من حذف هذه السيارة نهائياً؟")) {
-                await deleteDoc(doc(db, "cars", id));
-            }
-        };
-
-        window.instantPrint = (car) => {
-            const printArea = document.getElementById('printArea');
-            printArea.innerHTML = `
-                <div style="padding: 40px; border: 10px double #2563eb; text-align: center; direction: rtl; font-family: 'Tajawal', sans-serif;">
-                    <h1 style="color: #2563eb; font-size: 2rem; margin-bottom: 20px;">بطاقة بيانات مركبة</h1>
-                    <div style="display: inline-flex; border: 4px solid #333; border-radius: 10px; overflow: hidden; height: 80px; margin-bottom: 30px;">
-                        <div style="background: #dc2626; color: white; padding: 0 30px; display: flex; align-items: center; font-size: 2.5rem; font-weight: bold; border-left: 4px solid #333;">${car.plateCode}</div>
-                        <div style="padding: 0 40px; display: flex; align-items: center; font-size: 3rem; font-weight: bold;">${car.plateNumber}</div>
-                    </div>
-                    <div style="text-align: right; font-size: 1.2rem; line-height: 2;">
-                        <p><strong>العنوان النظامي:</strong> ${car.customId}</p>
-                        <p><strong>اسم المالك:</strong> ${car.ownerName}</p>
-                        <p><strong>نوع السيارة:</strong> ${car.type || '-'}</p>
-                        <p><strong>المستخدم:</strong> ${car.user || '-'}</p>
-                        <p><strong>رقم القاعدة:</strong> ${car.vin || '-'}</p>
-                        <p><strong>تاريخ انتهاء الترخيص:</strong> ${car.expiryLicense}</p>
-                        <p><strong>تاريخ انتهاء التأمين:</strong> ${car.expiryInsurance}</p>
-                    </div>
-                    <div style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 20px;">تطوير نظام المسعود لإدارة المركبات</div>
-                </div>`;
-            window.print();
-        };
-
-        window.filterCars = () => {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.car-card').forEach(card => {
-                const text = card.getAttribute('data-search').toLowerCase();
-                card.style.display = text.includes(term) ? 'block' : 'none';
+        window.loadDrivers = () => {
+            onSnapshot(collection(db, "drivers"), (snapshot) => {
+                const list = document.getElementById('driversList');
+                const select = document.getElementById('driverSelect');
+                list.innerHTML = "";
+                select.innerHTML = '<option value="">-- اختر سائق --</option>';
+                snapshot.forEach(docSnap => {
+                    const d = docSnap.data(), id = docSnap.id;
+                    list.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl card-shadow border-r-4 border-blue-600 flex justify-between items-center">
+                            <div><div class="font-bold">${d.name}</div><div class="text-xs text-gray-500">${d.phone || ''}</div></div>
+                            <button onclick="deleteDriver('${id}')" class="text-red-500 font-bold">حذف</button>
+                        </div>`;
+                    select.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+                });
             });
         };
 
-        // وظيفة تبديل العهدة (نموذج)
-        window.openAssignDriver = (id) => {
-            alert("سيتم تحويلك لإدارة السائقين لتبديل عهدة السيارة: " + id);
-            // هنا يمكنك إضافة منطق فتح المودال الخاص بالسائقين
+        // وظائف تبديل العهدة
+        window.openAssignModal = (carId, plate) => {
+            currentAssigningCarId = carId;
+            document.getElementById('assignCarInfo').innerText = "سيارة رقم: " + plate;
+            toggleModal('assignModal');
         };
+
+        window.confirmAssignment = async () => {
+            const newDriver = document.getElementById('driverSelect').value;
+            if(!newDriver) return alert("اختر سائقاً");
+            await updateDoc(doc(db, "cars", currentAssigningCarId), { user: newDriver });
+            toggleModal('assignModal');
+            alert("تم تحديث العهدة بنجاح");
+        };
+
+        // وظائف مساعدة
+        window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
+        window.checkExpiry = (d) => d && (new Date(d) - new Date()) / 86400000 <= 15;
+        window.deleteCar = async (id) => confirm("حذف السيارة؟") && await deleteDoc(doc(db, "cars", id));
+        window.deleteDriver = async (id) => confirm("حذف السائق؟") && await deleteDoc(doc(db, "drivers", id));
+        
+        window.editCar = async (id) => {
+            const d = (await getDoc(doc(db, "cars", id))).data();
+            document.getElementById('editDocId').value = id;
+            document.getElementById('plateNumber').value = d.plateNumber;
+            document.getElementById('plateCode').value = d.plateCode;
+            document.getElementById('ownerName').value = d.ownerName;
+            document.getElementById('userField').value = d.user || '';
+            document.getElementById('expiryLicense').value = d.expiryLicense;
+            document.getElementById('expiryInsurance').value = d.expiryInsurance;
+            toggleModal('carModal');
+        };
+
+        document.getElementById('carForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editDocId').value;
+            const data = {
+                plateNumber: document.getElementById('plateNumber').value,
+                plateCode: document.getElementById('plateCode').value,
+                ownerName: document.getElementById('ownerName').value,
+                user: document.getElementById('userField').value,
+                expiryLicense: document.getElementById('expiryLicense').value,
+                expiryInsurance: document.getElementById('expiryInsurance').value,
+                updatedAt: new Date()
+            };
+            if(id) await updateDoc(doc(db, "cars", id), data);
+            else {
+                data.createdAt = new Date();
+                data.customId = "AL MASAOOD_" + Math.floor(Math.random()*1000); // مثال للتبسيط
+                await addDoc(collection(db, "cars"), data);
+            }
+            toggleModal('carModal');
+        };
+
+        window.instantPrint = (car) => {
+            const area = document.getElementById('printArea');
+            area.innerHTML = `<div style="padding:50px; text-align:center; border:5px solid #000;">
+                <h1>بطاقة مركبة</h1>
+                <h2>${car.plateCode} - ${car.plateNumber}</h2>
+                <p>المالك: ${car.ownerName}</p>
+                <p>المستخدم: ${car.user || 'غير محدد'}</p>
+            </div>`;
+            window.print();
+        };
+
+        setInterval(() => {
+            document.getElementById('currentDateTime').innerText = new Date().toLocaleString();
+        }, 1000);
     </script>
 </body>
 </html>
