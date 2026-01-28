@@ -26,7 +26,6 @@
         .btn-red { background-color: #dc2626; color: white; }
         .btn-gray { background-color: #64748b; color: white; }
 
-        /* تصميم لوحة أرقام الإمارات المحدث */
         .uae-plate {
             display: inline-flex;
             align-items: center;
@@ -73,7 +72,10 @@
 
     <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl card-shadow border-b-4 border-blue-600">
         <div id="currentDateTime" class="text-xl font-bold text-blue-800"></div>
-        <button onclick="login()" id="loginBtn" class="btn btn-blue">جاري التحميل...</button>
+        <div class="flex gap-2">
+            <button onclick="login()" id="loginBtn" class="btn btn-blue">جاري التحميل...</button>
+            <button onclick="logout()" id="logoutBtn" class="btn btn-red hidden">خروج</button>
+        </div>
     </header>
 
     <main id="app" class="hidden">
@@ -120,7 +122,6 @@
                 <div><label class="block mb-2 font-bold text-lg">انتهاء الترخيص</label><input type="date" id="expiryLicense" required></div>
                 <div><label class="block mb-2 font-bold text-lg">انتهاء التأمين</label><input type="date" id="expiryInsurance" required></div>
                 <div class="md:col-span-2"><label class="block mb-2 font-bold text-lg">ملاحظات</label><textarea id="notes" rows="3"></textarea></div>
-                
                 <div class="md:col-span-2 flex gap-4 mt-6">
                     <button type="submit" class="btn btn-blue flex-1 text-xl">حفظ البيانات</button>
                     <button type="button" onclick="toggleModal('carModal')" class="btn btn-gray flex-1 text-xl">إلغاء</button>
@@ -132,7 +133,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, signOut, GoogleAuthProvider, onAuthStateChanged, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
@@ -148,6 +149,13 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // قائمة الإيميلات المسموح لها
+        const allowedAdmins = [
+            "saad323m@gmail.com",
+            "n2.saad113@gmail.com",
+            "p.my123.car@gmail.com"
+        ];
+
         setInterval(() => {
             const now = new Date();
             document.getElementById('currentDateTime').innerText = now.toLocaleString('en-GB', { 
@@ -155,16 +163,24 @@
             });
         }, 1000);
 
-        window.login = () => signInWithPopup(auth, provider);
+        window.login = () => signInWithRedirect(auth, provider);
+        window.logout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email === "saad323m@gmail.com") {
+            if (user && allowedAdmins.includes(user.email)) {
                 document.getElementById('app').classList.remove('hidden');
-                document.getElementById('loginBtn').innerText = "خروج";
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
                 loadCars();
             } else {
                 document.getElementById('app').classList.add('hidden');
+                document.getElementById('loginBtn').classList.remove('hidden');
+                document.getElementById('logoutBtn').classList.add('hidden');
                 document.getElementById('loginBtn').innerText = "دخول الأدمن";
+                if(user && !allowedAdmins.includes(user.email)) {
+                    alert("عذراً، هذا الحساب لا يملك صلاحيات الدخول.");
+                    signOut(auth);
+                }
             }
         });
 
