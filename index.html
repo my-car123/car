@@ -143,14 +143,27 @@
                     <button onclick="addNewDriver()" class="btn btn-blue text-lg">حفظ السائق</button>
                 </div>
             </div>
-            <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                </div>
+            <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
     </main>
 
     <footer>
         تطوير وتصميم: <span class="text-blue-600">Mohamed Saad</span> &copy; 2026
     </footer>
+
+    <div id="driverAssignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 card-shadow">
+            <h2 class="text-xl font-bold mb-4 text-blue-700 border-b pb-2">اختيار السائق المستلم</h2>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-bold text-gray-600">اختر من القائمة:</label>
+                <select id="driverSelect" class="w-full"></select>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="confirmAssignDriver()" class="btn btn-blue flex-1">تأكيد الاستلام</button>
+                <button onclick="closeAssignModal()" class="btn btn-gray flex-1">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
     <div id="printArea" style="display: none;"></div>
 
@@ -363,7 +376,7 @@
                                     <div><p class="text-xs text-gray-400">النوع</p><strong>${car.type}</strong></div>
                                     <div><p class="text-xs text-gray-400">رقم القاعدة</p><strong>${car.vin || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">سنة الصنع</p><strong>${car.year || '-'}</strong></div>
-                                    <div><p class="text-xs text-gray-400">المستخدم</p><strong>${car.user || '-'}</strong></div>
+                                    <div><p class="text-xs text-gray-400">المستخدم</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
                                     <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}">
                                         <p class="text-xs text-gray-400">انتهاء الترخيص</p><strong>${car.expiryLicense}</strong>
                                     </div>
@@ -372,7 +385,8 @@
                                     </div>
                                     <div class="col-span-2"><p class="text-xs text-gray-400">ملاحظات</p><p>${car.notes || 'لا يوجد'}</p></div>
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="openAssignDriver('${id}')" class="btn btn-gray bg-orange-500 flex-1">تبديل العهدة</button>
                                     <button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button>
                                     <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1">طباعة</button>
                                     <button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button>
