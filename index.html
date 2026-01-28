@@ -204,7 +204,7 @@
             } else {
                 if(user) signOut(auth);
                 appMain.classList.add('hidden');
-                if(mainNav) mainNav.classList.remove('hidden');
+                if(mainNav) mainNav.classList.add('hidden');
                 loginSection.classList.remove('hidden');
                 userProfile.classList.add('hidden');
             }
@@ -266,7 +266,7 @@
                     if (isExpiring) alerts++;
                     list.innerHTML += `
                         <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" data-search="${car.ownerName} ${car.plateNumber}">
-                            <div onclick="toggleAccordion('${id}'); if(window.loadCarHistory) window.loadCarHistory('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
+                            <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
                                 <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
                                 <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number font-mono">${car.plateNumber}</div></div>
                                 <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
@@ -278,13 +278,10 @@
                                     <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
                                     <div><p class="text-xs text-gray-400">القاعدة</p><strong class="font-mono">${car.vin || '-'}</strong></div>
                                 </div>
-                                <div id="car-history-${id}" class="mb-6 p-4 bg-white rounded-xl border border-orange-200 shadow-inner max-h-40 overflow-y-auto">
-                                    <p class="text-xs text-gray-400 italic text-center">جاري تحميل سجل المستخدمين...</p>
-                                </div>
                                 <div class="flex flex-wrap gap-2">
                                     <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1">تبديل العهدة</button>
                                     <button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button>
-                                    <button onclick='instantPrint(${JSON.stringify(car).replace(/'/g, "\\'")})' class="btn btn-gray flex-1 text-white">طباعة</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white">طباعة</button>
                                     <button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button>
                                 </div>
                             </div>
