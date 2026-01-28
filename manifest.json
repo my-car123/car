@@ -1,0 +1,21 @@
+{
+  "name": "Al Masaood Vehicle Management",
+  "short_name": "Al Masaood",
+  "description": "نظام إدارة المركبات - المسعود",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
