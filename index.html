@@ -3,36 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المركبات - محمد سعد</title>
+    <title>نظام إدارة المركبات - الإصدار الرسمي V1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        input, select, textarea { border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; width: 100%; outline: none; transition: all 0.3s; font-family: sans-serif; }
-        input:focus { border-color: #2563eb; background-color: #f0f7ff; }
+        
+        /* تكبير خانات الإدخال لتكون أوضح وأسهل في الرؤية */
+        input, select, textarea { 
+            border: 2px solid #cbd5e1; 
+            border-radius: 12px; 
+            padding: 18px; /* زيادة التعبئة */
+            width: 100%; 
+            outline: none; 
+            transition: all 0.3s; 
+            font-size: 1.2rem; /* تكبير الخط */
+            font-family: sans-serif; 
+        }
+        input:focus { border-color: #2563eb; background-color: #f0f7ff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        
         .btn { padding: 15px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 1.1rem; transition: transform 0.1s, opacity 0.2s; border: none; }
         .btn:active { transform: scale(0.98); }
         .btn-blue { background-color: #2563eb; color: white; }
         .btn-red { background-color: #dc2626; color: white; }
         .btn-gray { background-color: #64748b; color: white; }
+        
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
-        .alert-border { border-right: 8px solid #ef4444 !important; }
-        
-        /* محرك البحث */
-        .search-box input { padding-right: 20px; font-size: 1.2rem; border-color: #2563eb; }
 
-        /* إصلاح منطق الطباعة النهائي */
+        /* بطاقة السيارة بحواف زرقاء ثابتة */
+        .car-card { 
+            border: 2px solid #2563eb !important; 
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* تنبيه الحواف الحمراء للانتهاء */
+        .alert-border { border: 3px solid #ef4444 !important; }
+        
+        .search-box input { padding-right: 20px; font-size: 1.3rem; border-color: #2563eb; }
+
         @media print {
-            /* إخفاء كل شيء في الصفحة */
             body > * { display: none !important; }
-            /* إظهار منطقة الطباعة فقط */
             #printArea { display: block !important; visibility: visible !important; width: 100% !important; position: absolute; left: 0; top: 0; }
             #printArea * { visibility: visible !important; }
         }
         
-        /* الأرقام إنجليزية دائماً */
         * { font-variant-numeric: tabular-nums; }
     </style>
 </head>
@@ -50,7 +68,7 @@
                 <p id="totalCars" class="text-3xl font-bold">0</p>
             </div>
             <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-red-500">
-                <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الانتهاء (15 يوم)</h3>
+                <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الانتهاء</h3>
                 <p id="expiryAlerts" class="text-3xl font-bold text-red-600">0</p>
             </div>
             <button onclick="toggleModal('carModal')" class="btn btn-blue h-full flex items-center justify-center text-2xl">إضافة سيارة جديدة</button>
@@ -66,34 +84,34 @@
     <div id="printArea" style="display: none;"></div>
 
     <footer class="mt-12 text-center text-gray-400 border-t pt-4">
-        حقوق المطور Mohamed saad &copy; 2026
+        نظام إدارة المركبات &copy; 2026
     </footer>
 
     <div id="carModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-blue-700">إضافة سيارة جديدة</h2>
+            <h2 id="modalTitle" class="text-3xl font-bold mb-6 text-blue-700 border-b pb-2">إضافة سيارة جديدة</h2>
             <form id="carForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <input type="hidden" id="editDocId">
-                <div><label class="block mb-1 font-bold">رقم اللوحة</label><input type="text" id="plateNumber" required placeholder="12345"></div>
-                <div><label class="block mb-1 font-bold">رمز اللوحة</label><input type="text" id="plateCode" required placeholder="A / 10"></div>
+                <div><label class="block mb-2 font-bold text-lg">رقم اللوحة</label><input type="text" id="plateNumber" required></div>
+                <div><label class="block mb-2 font-bold text-lg">رمز اللوحة</label><input type="text" id="plateCode" required></div>
                 <div>
-                    <label class="block mb-1 font-bold">الإمارة</label>
-                    <input list="emirates" id="emirate" placeholder="اختر أو اكتب">
+                    <label class="block mb-2 font-bold text-lg">الإمارة</label>
+                    <input list="emirates" id="emirate">
                     <datalist id="emirates">
                         <option value="أبوظبي"><option value="دبي"><option value="الشارقة"><option value="عجمان"><option value="أم القيوين"><option value="رأس الخيمة"><option value="الفجيرة">
                     </datalist>
                 </div>
-                <div><label class="block mb-1 font-bold">اسم المالك</label><input type="text" id="ownerName" required></div>
-                <div><label class="block mb-1 font-bold">المستخدم (اختياري)</label><input type="text" id="userField"></div>
-                <div><label class="block mb-1 font-bold">نوع السيارة</label><input type="text" id="type" placeholder="مثلاً: مرسيدس"></div>
-                <div><label class="block mb-1 font-bold">سنة الصنع</label><input type="number" id="year" value="2026"></div>
-                <div><label class="block mb-1 font-bold">انتهاء الترخيص</label><input type="date" id="expiryLicense" required></div>
-                <div><label class="block mb-1 font-bold">انتهاء التأمين</label><input type="date" id="expiryInsurance" required></div>
-                <div class="md:col-span-2"><label class="block mb-1 font-bold">ملاحظات</label><textarea id="notes" rows="2"></textarea></div>
+                <div><label class="block mb-2 font-bold text-lg">اسم المالك</label><input type="text" id="ownerName" required></div>
+                <div><label class="block mb-2 font-bold text-lg">المستخدم</label><input type="text" id="userField"></div>
+                <div><label class="block mb-2 font-bold text-lg">نوع السيارة</label><input type="text" id="type"></div>
+                <div><label class="block mb-2 font-bold text-lg">سنة الصنع</label><input type="number" id="year" value="2026"></div>
+                <div><label class="block mb-2 font-bold text-lg">انتهاء الترخيص</label><input type="date" id="expiryLicense" required></div>
+                <div><label class="block mb-2 font-bold text-lg">انتهاء التأمين</label><input type="date" id="expiryInsurance" required></div>
+                <div class="md:col-span-2"><label class="block mb-2 font-bold text-lg">ملاحظات</label><textarea id="notes" rows="3"></textarea></div>
                 
-                <div class="md:col-span-2 flex gap-4 mt-4">
-                    <button type="submit" class="btn btn-blue flex-1">حفظ البيانات</button>
-                    <button type="button" onclick="toggleModal('carModal')" class="btn btn-gray flex-1">إلغاء</button>
+                <div class="md:col-span-2 flex gap-4 mt-6">
+                    <button type="submit" class="btn btn-blue flex-1 text-xl">حفظ البيانات</button>
+                    <button type="button" onclick="toggleModal('carModal')" class="btn btn-gray flex-1 text-xl">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -118,7 +136,6 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // تحديث التاريخ والساعة
         setInterval(() => {
             const now = new Date();
             document.getElementById('currentDateTime').innerText = now.toLocaleString('en-GB', { 
@@ -131,7 +148,7 @@
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "saad323m@gmail.com") {
                 document.getElementById('app').classList.remove('hidden');
-                document.getElementById('loginBtn').innerText = "تسجيل خروج";
+                document.getElementById('loginBtn').innerText = "خروج";
                 loadCars();
             } else {
                 document.getElementById('app').classList.add('hidden');
@@ -181,7 +198,7 @@
                     });
                 }
                 toggleModal('carModal');
-            } catch (err) { alert("خطأ في البيانات أو الصلاحيات!"); }
+            } catch (err) { alert("حدث خطأ في النظام!"); }
         };
 
         function loadCars() {
@@ -199,7 +216,7 @@
                     if (isExpiring) alerts++;
 
                     const card = `
-                        <div class="car-card bg-white rounded-xl card-shadow overflow-hidden border border-gray-100 ${isExpiring ? 'alert-border' : ''}" 
+                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" 
                              data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode} ${car.customId}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-50">
                                 <div>
@@ -224,7 +241,7 @@
                                 </div>
                                 <div class="flex gap-2">
                                     <button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button>
-                                    <button onclick="preparePrint('${id}')" class="btn btn-gray flex-1">طباعة</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1">طباعة</button>
                                     <button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button>
                                 </div>
                             </div>
@@ -244,11 +261,9 @@
             });
         };
 
-        window.preparePrint = async (id) => {
-            const docSnap = await getDoc(doc(db, "cars", id));
-            const car = docSnap.data();
+        // وظيفة الطباعة الفورية السريعة بدون تأخير
+        window.instantPrint = (car) => {
             const printArea = document.getElementById('printArea');
-            
             printArea.innerHTML = `
                 <div style="padding: 30px; border: 5px solid #2563eb; border-radius: 20px; direction: rtl; font-family: 'Tajawal', sans-serif; background: white;">
                     <h1 style="text-align: center; color: #2563eb; font-size: 28px; margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">بيانات المركبة الرسمية</h1>
@@ -256,6 +271,7 @@
                         <div style="background: #f0f7ff; padding: 15px; border-radius: 10px;"><b>الرقم التسلسلي:</b> ${car.customId}</div>
                         <div style="background: #f0f7ff; padding: 15px; border-radius: 10px;"><b>رقم اللوحة والرمز:</b> ${car.plateNumber} - ${car.plateCode}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>اسم المالك:</b> ${car.ownerName}</div>
+                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>المستخدم:</b> ${car.user || '-'}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>الإمارة:</b> ${car.emirate}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>النوع:</b> ${car.type}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>سنة الصنع:</b> ${car.year}</div>
@@ -264,7 +280,7 @@
                         <div style="grid-column: span 2; padding: 15px; background: #fafafa; border-radius: 10px;"><b>ملاحظات إضافية:</b> ${car.notes || '-'}</div>
                     </div>
                     <p style="margin-top: 40px; text-align: center; color: #666; font-size: 14px;">تم استخراج هذا المستند في: ${new Date().toLocaleString('en-GB')}</p>
-                    <p style="text-align: center; font-weight: bold; color: #2563eb; margin-top: 5px;">نظام إدارة المركبات - محمد سعد</p>
+                    <p style="text-align: center; font-weight: bold; color: #2563eb; margin-top: 5px;">نظام إدارة المركبات</p>
                 </div>
             `;
             window.print();
@@ -276,9 +292,7 @@
         };
 
         window.deleteCar = async (id) => {
-            if (confirm("تحذير: هل أنت متأكد من حذف هذه السيارة؟ لن تتمكن من استعادة البيانات أو الرقم التسلسلي مرة أخرى.")) {
-                await deleteDoc(doc(db, "cars", id));
-            }
+            if (confirm("هل أنت متأكد من حذف هذه السيارة؟")) await deleteDoc(doc(db, "cars", id));
         };
 
         window.editCar = async (id) => {
