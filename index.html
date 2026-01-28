@@ -136,14 +136,31 @@
 
         <section id="driversTab" class="tab-content hidden">
             <div class="bg-white p-6 rounded-xl card-shadow mb-8 border-t-4 border-blue-700">
-                <h2 class="text-2xl font-bold mb-4 text-blue-700">إضافة سائق جديد لأسطول المسعود</h2>
+                <h2 class="text-2xl font-bold mb-4 text-blue-700 text-center">إدارة أسطول سائقي المسعود</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input type="text" id="driverName" placeholder="اسم السائق الكامل">
                     <input type="text" id="driverPhone" placeholder="رقم الجوال / وسيلة الاتصال">
                     <button onclick="addNewDriver()" class="btn btn-blue text-lg">حفظ السائق</button>
                 </div>
             </div>
-            <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            
+            <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
+
+            <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
+                <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل حركة العهدة (الأرشيف)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700">
+                                <th class="p-3 border">التاريخ والوقت</th>
+                                <th class="p-3 border">السيارة</th>
+                                <th class="p-3 border">السائق المستلم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transferHistoryList"></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
     </main>
 
@@ -275,18 +292,20 @@
 
         window.toggleModal = (id) => {
             const m = document.getElementById(id);
+            if(!m) return;
             m.classList.toggle('hidden');
             if(m.classList.contains('hidden')) {
-                document.getElementById('carForm').reset();
-                document.getElementById('editDocId').value = "";
-                document.getElementById('modalTitle').innerText = "إضافة سيارة جديدة";
+                if(id === 'carModal') {
+                    document.getElementById('carForm').reset();
+                    document.getElementById('editDocId').value = "";
+                    document.getElementById('modalTitle').innerText = "إضافة سيارة جديدة";
+                }
             }
         };
 
         document.getElementById('carForm').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editDocId').value;
-            
             const plateNum = document.getElementById('plateNumber').value.trim();
             const plateCode = document.getElementById('plateCode').value.trim();
             const vin = document.getElementById('vin').value.trim();
@@ -308,13 +327,11 @@
 
             try {
                 const carsRef = collection(db, "cars");
-                
                 const qPlate = query(carsRef, where("plateNumber", "==", plateNum), where("plateCode", "==", plateCode));
                 const plateSnap = await getDocs(qPlate);
                 if (plateSnap.docs.some(d => d.id !== editId)) {
                     return alert("تنبيه: هذه اللوحة مسجلة مسبقاً بنفس الرمز!");
                 }
-
                 if (vin !== "") {
                     const qVin = query(carsRef, where("vin", "==", vin));
                     const vinSnap = await getDocs(qVin);
@@ -322,7 +339,6 @@
                         return alert("تنبيه: رقم القاعدة (VIN) مسجل لسيارة أخرى!");
                     }
                 }
-
                 if (editId) {
                     await updateDoc(doc(db, "cars", editId), carData);
                 } else {
@@ -339,35 +355,25 @@
                     });
                 }
                 toggleModal('carModal');
-            } catch (err) { 
-                console.error(err);
-                alert("حدث خطأ في معالجة البيانات"); 
-            }
+            } catch (err) { alert("حدث خطأ في معالجة البيانات"); }
         };
 
         function loadCars() {
             const q = query(collection(db, "cars"), orderBy("createdAt", "desc"));
             onSnapshot(q, (snapshot) => {
                 const list = document.getElementById('carsList');
+                if(!list) return;
                 list.innerHTML = "";
                 let total = 0; let alerts = 0;
-                
                 snapshot.forEach((docSnap) => {
-                    const car = docSnap.data();
-                    const id = docSnap.id;
-                    total++;
+                    const car = docSnap.data(); const id = docSnap.id; total++;
                     const isExpiring = checkExpiry(car.expiryLicense) || checkExpiry(car.expiryInsurance);
                     if (isExpiring) alerts++;
-
                     const card = `
-                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" 
-                             data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode} ${car.customId}">
+                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode} ${car.customId}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
                                 <span class="text-blue-600 font-bold mb-2 text-sm">${car.customId}</span>
-                                <div class="uae-plate mb-2">
-                                    <div class="plate-code">${car.plateCode}</div>
-                                    <div class="plate-number">${car.plateNumber}</div>
-                                </div>
+                                <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number">${car.plateNumber}</div></div>
                                 <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
                             </div>
                             <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
@@ -377,18 +383,14 @@
                                     <div><p class="text-xs text-gray-400">رقم القاعدة</p><strong>${car.vin || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">سنة الصنع</p><strong>${car.year || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">المستخدم</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
-                                    <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}">
-                                        <p class="text-xs text-gray-400">انتهاء الترخيص</p><strong>${car.expiryLicense}</strong>
-                                    </div>
-                                    <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600' : ''}">
-                                        <p class="text-xs text-gray-400">انتهاء التأمين</p><strong>${car.expiryInsurance}</strong>
-                                    </div>
+                                    <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong>${car.expiryLicense}</strong></div>
+                                    <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong>${car.expiryInsurance}</strong></div>
                                     <div class="col-span-2"><p class="text-xs text-gray-400">ملاحظات</p><p>${car.notes || 'لا يوجد'}</p></div>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
-                                    <button onclick="openAssignDriver('${id}')" class="btn btn-gray bg-orange-500 flex-1">تبديل العهدة</button>
+                                    <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1">تبديل العهدة</button>
                                     <button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button>
-                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1">طباعة</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white">طباعة</button>
                                     <button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button>
                                 </div>
                             </div>
@@ -412,27 +414,23 @@
             const printArea = document.getElementById('printArea');
             printArea.innerHTML = `
                 <div style="padding: 30px; border: 5px solid #2563eb; border-radius: 20px; direction: rtl; font-family: 'Tajawal', sans-serif; background: white; text-align: center;">
-                    <div style="margin-bottom: 30px;">
-                        <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 15px;">بيانات المركبة الرسمية</h1>
-                        <div class="uae-plate" style="transform: scale(1.4); margin: 10px 0;">
-                            <div class="plate-code">${car.plateCode}</div>
-                            <div class="plate-number">${car.plateNumber}</div>
-                        </div>
-                        <h2 style="font-size: 22px; margin-top: 15px; color: #333;">${car.ownerName}</h2>
+                    <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 15px;">بيانات المركبة الرسمية - المسعود</h1>
+                    <div class="uae-plate" style="transform: scale(1.4); margin: 20px 0; display: inline-flex;">
+                        <div class="plate-code" style="background: #dc2626; color: white; padding: 0 12px; font-weight: bold; border-left: 2px solid #333;">${car.plateCode}</div>
+                        <div class="plate-number" style="padding: 0 15px; font-size: 1.6rem; font-weight: 800;">${car.plateNumber}</div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 18px; text-align: right;">
-                        <div style="background: #f0f7ff; padding: 15px; border-radius: 10px;"><b>الرقم التسلسلي:</b> ${car.customId}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>المستخدم:</b> ${car.user || '-'}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>الإمارة:</b> ${car.emirate}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>النوع:</b> ${car.type}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>رقم القاعدة:</b> ${car.vin || '-'}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>سنة الصنع:</b> ${car.year || '-'}</div>
-                        <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء الترخيص:</b> ${car.expiryLicense}</div>
-                        <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء التأمين:</b> ${car.expiryInsurance}</div>
-                        <div style="grid-column: span 2; padding: 15px; background: #fafafa; border-radius: 10px;"><b>ملاحظات إضافية:</b> ${car.notes || '-'}</div>
+                    <h2 style="font-size: 22px; color: #333;">${car.ownerName}</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 18px; text-align: right; margin-top: 30px;">
+                        <div style="background: #f0f7ff; padding: 10px;"><b>الرقم التسلسلي:</b> ${car.customId}</div>
+                        <div style="padding: 10px; border-bottom: 1px solid #eee;"><b>المستخدم:</b> ${car.user || '-'}</div>
+                        <div style="padding: 10px; border-bottom: 1px solid #eee;"><b>الإمارة:</b> ${car.emirate}</div>
+                        <div style="padding: 10px; border-bottom: 1px solid #eee;"><b>النوع:</b> ${car.type}</div>
+                        <div style="padding: 10px; border-bottom: 1px solid #eee;"><b>رقم القاعدة:</b> ${car.vin || '-'}</div>
+                        <div style="padding: 10px; border-bottom: 1px solid #eee;"><b>سنة الصنع:</b> ${car.year || '-'}</div>
+                        <div style="padding: 10px; border: 1px solid #ddd;"><b>انتهاء الترخيص:</b> ${car.expiryLicense}</div>
+                        <div style="padding: 10px; border: 1px solid #ddd;"><b>انتهاء التأمين:</b> ${car.expiryInsurance}</div>
                     </div>
-                </div>
-            `;
+                </div>`;
             window.print();
         };
 
@@ -441,9 +439,7 @@
             return diffDays <= 15;
         };
 
-        window.deleteCar = async (id) => {
-            if (confirm("هل أنت متأكد من حذف هذه السيارة نهائياً؟")) await deleteDoc(doc(db, "cars", id));
-        };
+        window.deleteCar = async (id) => { if (confirm("هل أنت متأكد من حذف هذه السيارة نهائياً؟")) await deleteDoc(doc(db, "cars", id)); };
 
         window.editCar = async (id) => {
             try {
@@ -468,9 +464,7 @@
             } catch (error) { alert("تعذر فتح واجهة التعديل"); }
         };
 
-        window.toggleAccordion = (id) => {
-            document.getElementById(`content-${id}`).classList.toggle('open');
-        };
+        window.toggleAccordion = (id) => { document.getElementById(`content-${id}`).classList.toggle('open'); };
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
