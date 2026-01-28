@@ -1,86 +1,28 @@
-/* تنسيق مدخلات الفورم *//* تنسيقات مخصصة */
-.label-text {
-    display: block;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin-bottom: 0.25rem;
-    font-weight: bold;
-}
-
 .form-input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 10px;
     border: 2px solid #f1f5f9;
     border-radius: 12px;
     outline: none;
-    transition: all 0.3s;
     background: #f8fafc;
 }
+.form-input:focus { border-color: #3b82f6; background: #fff; }
 
-.form-input:focus {
-    border-color: #3b82f6;
-    background: #fff;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-}
-
-.btn-action {
-    padding: 1rem;
-    border-radius: 12px;
-    font-weight: bold;
-    transition: transform 0.2s, opacity 0.2s;
-}
-
-.btn-action:active {
-    transform: scale(0.98);
-}
-
-/* لوحة السيارة الإماراتية */
 .uae-plate-box {
     display: flex;
     border: 2px solid #1e293b;
-    border-radius: 8px;
+    border-radius: 6px;
     background: white;
-    height: 45px;
-    width: 140px;
+    height: 40px;
+    width: 130px;
     overflow: hidden;
 }
+.plate-side-code { background: #e2e8f0; padding: 0 8px; display: flex; align-items: center; border-left: 2px solid #1e293b; font-weight: bold; }
+.plate-side-number { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
 
-.plate-side-code {
-    background: #e2e8f0;
-    width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    border-left: 2px solid #1e293b;
-    font-size: 1.1rem;
-}
-
-.plate-side-number {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1.2rem;
-    letter-spacing: 1px;
-}
-
-/* الأكورديون */
 .accordion-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+    transition: all 0.3s ease-out;
 }
-
-.accordion-content.open {
-    max-height: 1000px;
-    transition: max-height 0.4s ease-in-out;
-}
-
-@media print {
-    body * { visibility: hidden; }
-    #printArea, #printArea * { visibility: visible; }
-    #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-}
-}
+.accordion-content.open { max-height: 1000px; padding: 20px; border-top: 1px solid #eee; }
