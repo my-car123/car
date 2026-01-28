@@ -1,7 +1,10 @@
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const db = getFirestore();
 const driversRef = collection(db, "drivers");
+const carsRef = collection(db, "cars");
+
+let currentCarId = null; // متغير لحفظ معرف السيارة المختارة عند تبديل العهدة
 
 // 1. وظيفة التنقل بين التبويبات (Cars vs Drivers)
 window.switchTab = (tabId) => {
@@ -32,8 +35,8 @@ window.addNewDriver = async () => {
         await addDoc(driversRef, {
             name: name,
             phone: phone,
-            createdAt: new Date(),
-            activeCars: [] // قائمة السيارات اللي تحت عهدته حالياً
+            createdAt: serverTimestamp(),
+            activeCars: [] 
         });
         document.getElementById('driverName').value = "";
         document.getElementById('driverPhone').value = "";
@@ -44,7 +47,7 @@ window.addNewDriver = async () => {
     }
 };
 
-// 3. عرض السائقين في القائمة
+// 3. عرض السائقين في قائمة التبويب الخاص بهم
 window.loadDrivers = () => {
     const q = query(driversRef, orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -62,11 +65,64 @@ window.loadDrivers = () => {
                     </div>
                     <p class="text-gray-600 mb-2 font-medium">📞 ${driver.phone}</p>
                     <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                        <span class="text-xs text-gray-400">تاريخ الانضمام: ${new Date(driver.createdAt.seconds * 1000).toLocaleDateString()}</span>
+                        <span class="text-xs text-gray-400">تاريخ الانضمام: ${driver.createdAt ? new Date(driver.createdAt.seconds * 1000).toLocaleDateString() : 'قيد المعالجة'}</span>
                         <button onclick="window.location.href='tel:${driver.phone}'" class="text-blue-600 font-bold text-sm">اتصال سريع</button>
                     </div>
                 </div>`;
             list.innerHTML += card;
         });
     });
+};
+
+// 4. فتح نافذة اختيار السائق (Modal) لتبديل العهدة
+window.openAssignDriver = async (carId) => {
+    currentCarId = carId;
+    const select = document.getElementById('driverSelect');
+    select.innerHTML = '<option value="">جاري تحميل قائمة السائقين...</option>';
+    
+    document.getElementById('driverAssignModal').classList.remove('hidden');
+
+    try {
+        const snapshot = await getDocs(query(driversRef, orderBy("name", "asc")));
+        select.innerHTML = '<option value="">-- اختر السائق المستلم --</option>';
+        
+        snapshot.forEach(docSnap => {
+            const driver = docSnap.data();
+            select.innerHTML += `<option value="${driver.name}">${driver.name} (${driver.phone})</option>`;
+        });
+    } catch (error) {
+        console.error("Error fetching drivers:", error);
+        alert("فشل في تحميل قائمة السائقين");
+    }
+};
+
+// 5. إغلاق نافذة العهدة
+window.closeAssignModal = () => {
+    document.getElementById('driverAssignModal').classList.add('hidden');
+    currentCarId = null;
+};
+
+// 6. تأكيد عملية تبديل العهدة وتحديث السيارة
+window.confirmAssignDriver = async () => {
+    const select = document.getElementById('driverSelect');
+    const selectedDriver = select.value;
+
+    if (!selectedDriver) return alert("يرجى اختيار السائق أولاً");
+    if (!currentCarId) return alert("خطأ في تحديد السيارة");
+
+    try {
+        const carDocRef = doc(db, "cars", currentCarId);
+        
+        // تحديث حقل "المستخدم" في بيانات السيارة
+        await updateDoc(carDocRef, {
+            user: selectedDriver,
+            lastTransferDate: serverTimestamp()
+        });
+
+        alert(`تم نقل عهدة السيارة بنجاح إلى: ${selectedDriver}`);
+        window.closeAssignModal();
+    } catch (error) {
+        console.error("Error updating car user:", error);
+        alert("حدث خطأ أثناء تحديث العهدة");
+    }
 };
