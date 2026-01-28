@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المركبات - الإصدار الرسمي V1</title>
+    <title>نظام إدارة المركبات - AL MASAOOD | المسعود  V1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -13,8 +13,8 @@
         /* تكبير خانات الإدخال لتكون أوضح وأسهل في الرؤية */
         input, select, textarea { 
             border: 2px solid #cbd5e1; 
-            border-radius: 12px; 
-            padding: 18px; /* زيادة التعبئة */
+            border-radius: 14px; 
+            padding: 20px; /* زيادة التعبئة */
             width: 100%; 
             outline: none; 
             transition: all 0.3s; 
@@ -34,9 +34,9 @@
 
         /* بطاقة السيارة بحواف زرقاء ثابتة */
         .car-card { 
-            border: 2px solid #2563eb !important; 
+            border: 2px solid #1b60f5 !important; 
             background-color: white;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
         }
         
@@ -84,7 +84,7 @@
     <div id="printArea" style="display: none;"></div>
 
     <footer class="mt-12 text-center text-gray-400 border-t pt-4">
-        نظام إدارة المركبات &copy; 2026
+       - MOHAMED SAAD - نظام إدارة المركبات &copy; 2026
     </footer>
 
     <div id="carModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
@@ -104,6 +104,7 @@
                 <div><label class="block mb-2 font-bold text-lg">اسم المالك</label><input type="text" id="ownerName" required></div>
                 <div><label class="block mb-2 font-bold text-lg">المستخدم</label><input type="text" id="userField"></div>
                 <div><label class="block mb-2 font-bold text-lg">نوع السيارة</label><input type="text" id="type"></div>
+                <div><label class="block mb-2 font-bold text-lg">رقم القاعدة</label><input type="text" id="vin number"></div>
                 <div><label class="block mb-2 font-bold text-lg">سنة الصنع</label><input type="number" id="year" value="2026"></div>
                 <div><label class="block mb-2 font-bold text-lg">انتهاء الترخيص</label><input type="date" id="expiryLicense" required></div>
                 <div><label class="block mb-2 font-bold text-lg">انتهاء التأمين</label><input type="date" id="expiryInsurance" required></div>
@@ -229,6 +230,7 @@
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate}</strong></div>
                                     <div><p class="text-xs text-gray-400">النوع</p><strong>${car.type}</strong></div>
+                                    <div><p class="text-xs text-gray-400">رقم القاعدة</p><strong>${car.vin}</strong></div>
                                     <div><p class="text-xs text-gray-400">سنة الصنع</p><strong>${car.year}</strong></div>
                                     <div><p class="text-xs text-gray-400">المستخدم</p><strong>${car.user || '-'}</strong></div>
                                     <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}">
@@ -274,6 +276,7 @@
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>المستخدم:</b> ${car.user || '-'}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>الإمارة:</b> ${car.emirate}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>النوع:</b> ${car.type}</div>
+                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>رقم القاعدة:</b> ${car.vin}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>سنة الصنع:</b> ${car.year}</div>
                         <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء الترخيص:</b> ${car.expiryLicense}</div>
                         <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء التأمين:</b> ${car.expiryInsurance}</div>
@@ -305,6 +308,7 @@
             document.getElementById('ownerName').value = data.ownerName;
             document.getElementById('userField').value = data.user;
             document.getElementById('type').value = data.type;
+            document.getElementById('vin').value = data.vin;
             document.getElementById('year').value = data.year;
             document.getElementById('expiryLicense').value = data.expiryLicense;
             document.getElementById('expiryInsurance').value = data.expiryInsurance;
