@@ -9,33 +9,64 @@
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        
         input, select, textarea { 
             border: 2px solid #cbd5e1; 
             border-radius: 14px; 
-            padding: 20px; 
+            padding: 15px; 
             width: 100%; 
             outline: none; 
             transition: all 0.3s; 
-            font-size: 1.2rem; 
-            font-family: sans-serif; 
+            font-size: 1.1rem; 
         }
-        input:focus { border-color: #2563eb; background-color: #f0f7ff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-        .btn { padding: 15px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 1.1rem; transition: transform 0.1s, opacity 0.2s; border: none; }
-        .btn:active { transform: scale(0.98); }
+        input:focus { border-color: #2563eb; background-color: #f0f7ff; }
+        
+        .btn { padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; border: none; }
         .btn-blue { background-color: #2563eb; color: white; }
         .btn-red { background-color: #dc2626; color: white; }
         .btn-gray { background-color: #64748b; color: white; }
+
+        /* تصميم لوحة أرقام الإمارات */
+        .uae-plate {
+            display: inline-flex;
+            align-items: center;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background: white;
+            overflow: hidden;
+            height: 50px;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .plate-code {
+            background: #dc2626; /* اللون الأحمر للرمز */
+            color: white;
+            padding: 0 15px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border-left: 2px solid #333;
+        }
+        .plate-number {
+            color: #1a1a1a;
+            padding: 0 20px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
-        .car-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; }
+        .car-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
         .alert-border { border: 3px solid #ef4444 !important; }
-        .search-box input { padding-right: 20px; font-size: 1.3rem; border-color: #2563eb; }
+
         @media print {
             body > * { display: none !important; }
-            #printArea { display: block !important; visibility: visible !important; width: 100% !important; position: absolute; left: 0; top: 0; }
-            #printArea * { visibility: visible !important; }
+            #printArea { display: block !important; width: 100% !important; }
         }
-        * { font-variant-numeric: tabular-nums; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -59,17 +90,13 @@
         </section>
 
         <div class="search-box mb-6">
-            <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث برقم اللوحة، الرمز، أو اسم المالك...">
+            <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث برقم اللوحة، الرمز، أو اسم المالك..." class="border-2 border-blue-600">
         </div>
 
         <div id="carsList" class="space-y-4"></div>
     </main>
 
     <div id="printArea" style="display: none;"></div>
-
-    <footer class="mt-12 text-center text-gray-400 border-t pt-4">
-       - MOHAMED SAAD - نظام إدارة المركبات &copy; 2026
-    </footer>
 
     <div id="carModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow">
@@ -89,7 +116,7 @@
                 <div><label class="block mb-2 font-bold text-lg">المستخدم</label><input type="text" id="userField"></div>
                 <div><label class="block mb-2 font-bold text-lg">نوع السيارة</label><input type="text" id="type"></div>
                 <div><label class="block mb-2 font-bold text-lg">رقم القاعدة</label><input type="text" id="vin"></div>
-                <div><label class="block mb-2 font-bold text-lg">سنة الصنع</label><input type="number" id="year" value="2026"></div>
+                <div><label class="block mb-2 font-bold text-lg">سنة الصنع</label><input type="number" id="year"></div>
                 <div><label class="block mb-2 font-bold text-lg">انتهاء الترخيص</label><input type="date" id="expiryLicense" required></div>
                 <div><label class="block mb-2 font-bold text-lg">انتهاء التأمين</label><input type="date" id="expiryInsurance" required></div>
                 <div class="md:col-span-2"><label class="block mb-2 font-bold text-lg">ملاحظات</label><textarea id="notes" rows="3"></textarea></div>
@@ -161,7 +188,7 @@
                 ownerName: document.getElementById('ownerName').value,
                 user: document.getElementById('userField').value,
                 type: document.getElementById('type').value,
-                vin: document.getElementById('vin').value, // تم إصلاح استدعاء القيمة هنا
+                vin: document.getElementById('vin').value,
                 year: document.getElementById('year').value,
                 expiryLicense: document.getElementById('expiryLicense').value,
                 expiryInsurance: document.getElementById('expiryInsurance').value,
@@ -205,18 +232,21 @@
                         <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" 
                              data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode} ${car.customId}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-50">
-                                <div>
-                                    <span class="text-blue-600 font-bold ml-4">${car.customId}</span>
-                                    <span class="text-lg font-bold">${car.plateNumber} - ${car.plateCode}</span>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-blue-600 font-bold">${car.customId}</span>
+                                    <div class="uae-plate">
+                                        <div class="plate-code">${car.plateCode}</div>
+                                        <div class="plate-number">${car.plateNumber}</div>
+                                    </div>
                                 </div>
-                                <div class="text-gray-600 font-bold">${car.ownerName}</div>
+                                <div class="text-xl font-bold text-gray-700">${car.ownerName}</div>
                             </div>
                             <div id="content-${id}" class="accordion-content p-6 border-t bg-blue-50/30">
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate}</strong></div>
                                     <div><p class="text-xs text-gray-400">النوع</p><strong>${car.type}</strong></div>
-                                    <div><p class="text-xs text-gray-400">رقم القاعدة</p><strong>${car.vin || 'غير متوفر'}</strong></div>
-                                    <div><p class="text-xs text-gray-400">سنة الصنع</p><strong>${car.year}</strong></div>
+                                    <div><p class="text-xs text-gray-400">رقم القاعدة</p><strong>${car.vin || '-'}</strong></div>
+                                    <div><p class="text-xs text-gray-400">سنة الصنع</p><strong>${car.year || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">المستخدم</p><strong>${car.user || '-'}</strong></div>
                                     <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}">
                                         <p class="text-xs text-gray-400">انتهاء الترخيص</p><strong>${car.expiryLicense}</strong>
@@ -252,22 +282,26 @@
             const printArea = document.getElementById('printArea');
             printArea.innerHTML = `
                 <div style="padding: 30px; border: 5px solid #2563eb; border-radius: 20px; direction: rtl; font-family: 'Tajawal', sans-serif; background: white;">
-                    <h1 style="text-align: center; color: #2563eb; font-size: 28px; margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">بيانات المركبة الرسمية</h1>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px;">
+                        <h1 style="color: #2563eb; font-size: 24px; margin: 0;">بيانات المركبة الرسمية</h1>
+                        <div class="uae-plate" style="transform: scale(1.2);">
+                            <div class="plate-code">${car.plateCode}</div>
+                            <div class="plate-number">${car.plateNumber}</div>
+                        </div>
+                    </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 18px;">
                         <div style="background: #f0f7ff; padding: 15px; border-radius: 10px;"><b>الرقم التسلسلي:</b> ${car.customId}</div>
-                        <div style="background: #f0f7ff; padding: 15px; border-radius: 10px;"><b>رقم اللوحة والرمز:</b> ${car.plateNumber} - ${car.plateCode}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>اسم المالك:</b> ${car.ownerName}</div>
+                        <div style="background: #f0f7ff; padding: 15px; border-radius: 10px;"><b>اسم المالك:</b> ${car.ownerName}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>المستخدم:</b> ${car.user || '-'}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>الإمارة:</b> ${car.emirate}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>النوع:</b> ${car.type}</div>
                         <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>رقم القاعدة:</b> ${car.vin || '-'}</div>
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>سنة الصنع:</b> ${car.year}</div>
+                        <div style="padding: 15px; border-bottom: 1px solid #eee;"><b>سنة الصنع:</b> ${car.year || '-'}</div>
                         <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء الترخيص:</b> ${car.expiryLicense}</div>
                         <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء التأمين:</b> ${car.expiryInsurance}</div>
                         <div style="grid-column: span 2; padding: 15px; background: #fafafa; border-radius: 10px;"><b>ملاحظات إضافية:</b> ${car.notes || '-'}</div>
                     </div>
                     <p style="margin-top: 40px; text-align: center; color: #666; font-size: 14px;">تم استخراج هذا المستند في: ${new Date().toLocaleString('en-GB')}</p>
-                    <p style="text-align: center; font-weight: bold; color: #2563eb; margin-top: 5px;">نظام إدارة المركبات</p>
                 </div>
             `;
             window.print();
@@ -282,7 +316,6 @@
             if (confirm("هل أنت متأكد من حذف هذه السيارة؟")) await deleteDoc(doc(db, "cars", id));
         };
 
-        // تم إصلاح الدالة لتجنب تعطل الكود عند وجود قيم ناقصة
         window.editCar = async (id) => {
             try {
                 const docSnap = await getDoc(doc(db, "cars", id));
@@ -295,18 +328,15 @@
                     document.getElementById('ownerName').value = data.ownerName || "";
                     document.getElementById('userField').value = data.user || "";
                     document.getElementById('type').value = data.type || "";
-                    document.getElementById('vin').value = data.vin || ""; // تم تعديل الـ ID هنا
-                    document.getElementById('year').value = data.year || "2026";
+                    document.getElementById('vin').value = data.vin || "";
+                    document.getElementById('year').value = data.year || "";
                     document.getElementById('expiryLicense').value = data.expiryLicense || "";
                     document.getElementById('expiryInsurance').value = data.expiryInsurance || "";
                     document.getElementById('notes').value = data.notes || "";
                     document.getElementById('modalTitle').innerText = "تعديل بيانات: " + (data.customId || "");
                     toggleModal('carModal');
                 }
-            } catch (error) {
-                console.error("خطأ في التعديل:", error);
-                alert("تعذر فتح واجهة التعديل");
-            }
+            } catch (error) { alert("تعذر فتح واجهة التعديل"); }
         };
 
         window.toggleAccordion = (id) => {
