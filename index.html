@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المركبات - AL MASAOOD | المسعود  V1</title>
+    <title>نظام إدارة المركبات - AL MASAOOD | المسعود V1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -26,7 +26,6 @@
         .btn-red { background-color: #dc2626; color: white; }
         .btn-gray { background-color: #64748b; color: white; }
 
-        /* تصميم لوحة أرقام الإمارات المحدث */
         .uae-plate {
             display: inline-flex;
             align-items: center;
@@ -71,9 +70,21 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl card-shadow border-b-4 border-blue-600">
-        <div id="currentDateTime" class="text-xl font-bold text-blue-800"></div>
-        <button onclick="login()" id="loginBtn" class="btn btn-blue">جاري التحميل...</button>
+    <header class="bg-white p-6 rounded-xl card-shadow border-b-4 border-blue-600 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div id="currentDateTime" class="text-xl font-bold text-blue-800"></div>
+            
+            <div id="loginSection" class="flex flex-wrap gap-2 w-full md:w-auto">
+                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" class="!p-2 !text-sm flex-1">
+                <input type="password" id="loginPass" placeholder="كلمة المرور" class="!p-2 !text-sm flex-1">
+                <button onclick="handleLogin()" id="loginBtn" class="btn btn-blue !p-2 px-6">دخول</button>
+            </div>
+
+            <div id="userProfile" class="hidden flex items-center gap-4">
+                <span id="userEmailDisplay" class="font-bold text-green-700"></span>
+                <button onclick="handleLogout()" class="btn btn-red !p-2 px-4">خروج</button>
+            </div>
+        </div>
     </header>
 
     <main id="app" class="hidden">
@@ -131,8 +142,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
@@ -146,25 +157,57 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
 
+        // قائمة الأدمن المسموح لهم
+        const allowedAdmins = [
+            "saad323m@gmail.com",
+            "n2.saad113@gmail.com",
+            "p.my123.car@gmail.com"
+        ];
+
+        // تحديث التاريخ والوقت
         setInterval(() => {
             const now = new Date();
-            document.getElementById('currentDateTime').innerText = now.toLocaleString('en-GB', { 
+            const dt = document.getElementById('currentDateTime');
+            if(dt) dt.innerText = now.toLocaleString('en-GB', { 
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
         }, 1000);
 
-        window.login = () => signInWithPopup(auth, provider);
+        // وظيفة تسجيل الدخول
+        window.handleLogin = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            if(!email || !pass) return alert("يرجى إدخال البريد وكلمة المرور");
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                alert("خطأ في تسجيل الدخول: بريد أو كلمة مرور غير صحيحة");
+            }
+        };
 
+        // وظيفة تسجيل الخروج
+        window.handleLogout = () => signOut(auth);
+
+        // مراقبة حالة المصادقة
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email === "saad323m@gmail.com") {
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('loginBtn').innerText = "خروج";
+            const appMain = document.getElementById('app');
+            const loginSection = document.getElementById('loginSection');
+            const userProfile = document.getElementById('userProfile');
+            const userEmailDisplay = document.getElementById('userEmailDisplay');
+
+            if (user && allowedAdmins.includes(user.email)) {
+                appMain.classList.remove('hidden');
+                loginSection.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                userEmailDisplay.innerText = user.email;
                 loadCars();
             } else {
-                document.getElementById('app').classList.add('hidden');
-                document.getElementById('loginBtn').innerText = "دخول الأدمن";
+                if(user) { alert("عذراً، هذا الحساب لا يملك صلاحيات الأدمن."); signOut(auth); }
+                appMain.classList.add('hidden');
+                loginSection.classList.remove('hidden');
+                userProfile.classList.add('hidden');
             }
         });
 
@@ -203,15 +246,24 @@
                     await runTransaction(db, async (transaction) => {
                         const counterRef = doc(db, "settings", "counters");
                         const counterDoc = await transaction.get(counterRef);
-                        const nextId = (counterDoc.data().lastId || 99) + 1;
-                        transaction.update(counterRef, { lastId: nextId });
+                        
+                        let nextId = 100; // يبدأ من UAE100
+                        if (counterDoc.exists()) {
+                            nextId = (counterDoc.data().lastId || 99) + 1;
+                        }
+                        
+                        transaction.set(counterRef, { lastId: nextId }, { merge: true });
                         carData.customId = "UAE" + nextId;
                         carData.createdAt = new Date();
-                        transaction.set(doc(collection(db, "cars")), carData);
+                        const newCarRef = doc(collection(db, "cars"));
+                        transaction.set(newCarRef, carData);
                     });
                 }
                 toggleModal('carModal');
-            } catch (err) { alert("حدث خطأ في النظام!"); }
+            } catch (err) { 
+                console.error(err);
+                alert("حدث خطأ في حفظ البيانات!"); 
+            }
         };
 
         function loadCars() {
@@ -299,7 +351,6 @@
                         <div style="padding: 15px; border-radius: 10px; border: 1px solid #ddd;"><b>انتهاء التأمين:</b> ${car.expiryInsurance}</div>
                         <div style="grid-column: span 2; padding: 15px; background: #fafafa; border-radius: 10px;"><b>ملاحظات إضافية:</b> ${car.notes || '-'}</div>
                     </div>
-                    <p style="margin-top: 40px; color: #666; font-size: 14px;">تم استخراج هذا المستند في: ${new Date().toLocaleString('en-GB')}</p>
                 </div>
             `;
             window.print();
@@ -311,7 +362,7 @@
         };
 
         window.deleteCar = async (id) => {
-            if (confirm("هل أنت متأكد من حذف هذه السيارة؟")) await deleteDoc(doc(db, "cars", id));
+            if (confirm("هل أنت متأكد من حذف هذه السيارة نهائياً؟")) await deleteDoc(doc(db, "cars", id));
         };
 
         window.editCar = async (id) => {
