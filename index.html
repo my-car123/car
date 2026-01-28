@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة المركبات - AL MASAOOD | المسعود </title>
     <link rel="icon" href="icon.png" type="image/png">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -77,59 +77,75 @@
 </head>
 <body class="p-4 md:p-8">
 
-   <header class="bg-white p-4 rounded-xl card-shadow border-b-4 border-blue-600 mb-8">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-        
-        <div class="flex items-center gap-4">
-            <img src="icon.png" alt="Al Masaood Logo" class="h-20 w-auto object-contain">
-            <div class="hidden md:block h-12 w-1 bg-gray-200 rounded-full"></div>
-            <div id="currentDateTime" class="text-lg font-bold text-blue-800"></div>
-        </div>
-        
-        <div id="loginSection" class="flex flex-col gap-2 w-full md:w-auto">
-            <div class="flex flex-wrap gap-2">
-                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" class="!p-2 !text-sm flex-1">
-                <input type="password" id="loginPass" placeholder="كلمة المرور" class="!p-2 !text-sm flex-1">
-                <button onclick="handleLogin()" id="loginBtn" class="btn btn-blue !p-2 px-6">دخول</button>
-            </div>
-            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                <input type="checkbox" id="rememberMe" class="w-4 h-4"> تذكرني
-            </label>
-        </div>
-
-        <div id="userProfile" class="hidden flex items-center gap-4">
-            <span id="userEmailDisplay" class="font-bold text-green-700"></span>
-            <button onclick="handleLogout()" class="btn btn-red !p-2 px-4">خروج</button>
-        </div>
-    </div>
-</header>
-
-
-    <main id="app" class="hidden flex-grow">
-        <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-blue-500">
-                <h3 class="text-gray-500 mb-2 font-bold">إجمالي السيارات</h3>
-                <p id="totalCars" class="text-3xl font-bold">0</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-red-500">
-                <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الانتهاء</h3>
-                <p id="expiryAlerts" class="text-3xl font-bold text-red-600">0</p>
+    <header class="bg-white p-4 rounded-xl card-shadow border-b-4 border-blue-600 mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                <img src="icon.png" alt="Al Masaood Logo" class="h-20 w-auto object-contain">
+                <div class="hidden md:block h-12 w-1 bg-gray-200 rounded-full"></div>
+                <div id="currentDateTime" class="text-lg font-bold text-blue-800"></div>
             </div>
             
-            <button onclick="showCarsList()" class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-green-500 hover:bg-green-50 transition-colors">
-                <h3 class="text-green-600 mb-2 font-bold text-xl">عرض السيارات</h3>
-                <p class="text-sm text-gray-500">فتح قائمة البيانات الكاملة</p>
-            </button>
+            <div id="loginSection" class="flex flex-col gap-2 w-full md:w-auto">
+                <div class="flex flex-wrap gap-2">
+                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" class="!p-2 !text-sm flex-1">
+                    <input type="password" id="loginPass" placeholder="كلمة المرور" class="!p-2 !text-sm flex-1">
+                    <button onclick="handleLogin()" id="loginBtn" class="btn btn-blue !p-2 px-6">دخول</button>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" id="rememberMe" class="w-4 h-4"> تذكرني
+                </label>
+            </div>
 
-            <button onclick="toggleModal('carModal')" class="btn btn-blue h-full flex items-center justify-center text-xl">إضافة سيارة جديدة</button>
+            <div id="userProfile" class="hidden flex items-center gap-4">
+                <span id="userEmailDisplay" class="font-bold text-green-700"></span>
+                <button onclick="handleLogout()" class="btn btn-red !p-2 px-4">خروج</button>
+            </div>
+        </div>
+    </header>
+
+    <nav id="mainNav" class="hidden flex justify-center gap-4 mb-6">
+        <button onclick="switchTab('carsTab')" id="btnCarsTab" class="btn btn-blue px-8 shadow-md">إدارة السيارات</button>
+        <button onclick="switchTab('driversTab')" id="btnDriversTab" class="btn btn-gray px-8 shadow-md">إدارة السائقين</button>
+    </nav>
+
+    <main id="app" class="hidden flex-grow">
+        <section id="carsTab" class="tab-content">
+            <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-blue-500">
+                    <h3 class="text-gray-500 mb-2 font-bold">إجمالي السيارات</h3>
+                    <p id="totalCars" class="text-3xl font-bold">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-red-500">
+                    <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الانتهاء</h3>
+                    <p id="expiryAlerts" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <button onclick="showCarsList()" class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-green-500 hover:bg-green-50 transition-colors">
+                    <h3 class="text-green-600 mb-2 font-bold text-xl">عرض السيارات</h3>
+                    <p class="text-sm text-gray-500">فتح قائمة البيانات الكاملة</p>
+                </button>
+                <button onclick="toggleModal('carModal')" class="btn btn-blue h-full flex items-center justify-center text-xl">إضافة سيارة جديدة</button>
+            </section>
+
+            <div id="carsContainer" class="hidden">
+                <div class="search-box mb-6">
+                    <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث برقم اللوحة، الرمز، أو اسم المالك..." class="border-2 border-blue-600">
+                </div>
+                <div id="carsList" class="space-y-4"></div>
+            </div>
         </section>
 
-        <div id="carsContainer" class="hidden">
-            <div class="search-box mb-6">
-                <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث برقم اللوحة، الرمز، أو اسم المالك..." class="border-2 border-blue-600">
+        <section id="driversTab" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-xl card-shadow mb-8 border-t-4 border-blue-700">
+                <h2 class="text-2xl font-bold mb-4 text-blue-700">إضافة سائق جديد لأسطول المسعود</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="driverName" placeholder="اسم السائق الكامل">
+                    <input type="text" id="driverPhone" placeholder="رقم الجوال / وسيلة الاتصال">
+                    <button onclick="addNewDriver()" class="btn btn-blue text-lg">حفظ السائق</button>
+                </div>
             </div>
-            <div id="carsList" class="space-y-4"></div>
-        </div>
+            <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+        </section>
     </main>
 
     <footer>
@@ -215,12 +231,14 @@
 
         onAuthStateChanged(auth, (user) => {
             const appMain = document.getElementById('app');
+            const mainNav = document.getElementById('mainNav');
             const loginSection = document.getElementById('loginSection');
             const userProfile = document.getElementById('userProfile');
             const userEmailDisplay = document.getElementById('userEmailDisplay');
 
             if (user && allowedAdmins.includes(user.email)) {
                 appMain.classList.remove('hidden');
+                if(mainNav) mainNav.classList.remove('hidden');
                 loginSection.classList.add('hidden');
                 userProfile.classList.remove('hidden');
                 userEmailDisplay.innerText = user.email;
@@ -228,6 +246,7 @@
             } else {
                 if(user) { alert("عذراً، هذا الحساب لا يملك صلاحيات الأدمن."); signOut(auth); }
                 appMain.classList.add('hidden');
+                if(mainNav) mainNav.classList.add('hidden');
                 loginSection.classList.remove('hidden');
                 userProfile.classList.add('hidden');
             }
@@ -277,14 +296,12 @@
             try {
                 const carsRef = collection(db, "cars");
                 
-                // 1. تحقق تكرار اللوحة والرمز
                 const qPlate = query(carsRef, where("plateNumber", "==", plateNum), where("plateCode", "==", plateCode));
                 const plateSnap = await getDocs(qPlate);
                 if (plateSnap.docs.some(d => d.id !== editId)) {
                     return alert("تنبيه: هذه اللوحة مسجلة مسبقاً بنفس الرمز!");
                 }
 
-                // 2. تحقق تكرار رقم القاعدة
                 if (vin !== "") {
                     const qVin = query(carsRef, where("vin", "==", vin));
                     const vinSnap = await getDocs(qVin);
@@ -440,13 +457,15 @@
         window.toggleAccordion = (id) => {
             document.getElementById(`content-${id}`).classList.toggle('open');
         };
-    if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker Registered'))
-      .catch(err => console.log('Service Worker Failed', err));
-  });
-}
-</script>
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker Registered'))
+                .catch(err => console.log('Service Worker Failed', err));
+            });
+        }
+    </script>
+    <script type="module" src="drivers.js"></script>
 </body>
 </html>
