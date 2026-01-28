@@ -247,13 +247,13 @@
                         const counterRef = doc(db, "settings", "counters");
                         const counterDoc = await transaction.get(counterRef);
                         
-                        let nextId = 100; // يبدأ من UAE100
+                        let nextId = 100; // يبدأ من UAE_100
                         if (counterDoc.exists()) {
                             nextId = (counterDoc.data().lastId || 99) + 1;
                         }
                         
                         transaction.set(counterRef, { lastId: nextId }, { merge: true });
-                        carData.customId = "UAE" + nextId;
+                        carData.customId = "UAE_" + nextId;
                         carData.createdAt = new Date();
                         const newCarRef = doc(collection(db, "cars"));
                         transaction.set(newCarRef, carData);
@@ -285,7 +285,7 @@
                              data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode} ${car.customId}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
                                 <span class="text-blue-600 font-bold mb-2 text-sm">${car.customId}</span>
-                                <div class="uae-plate mb-2">
+                                <div class="uae_-plate mb-2">
                                     <div class="plate-code">${car.plateCode}</div>
                                     <div class="plate-number">${car.plateNumber}</div>
                                 </div>
@@ -334,7 +334,7 @@
                 <div style="padding: 30px; border: 5px solid #2563eb; border-radius: 20px; direction: rtl; font-family: 'Tajawal', sans-serif; background: white; text-align: center;">
                     <div style="margin-bottom: 30px;">
                         <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 15px;">بيانات المركبة الرسمية</h1>
-                        <div class="uae-plate" style="transform: scale(1.4); margin: 10px 0;">
+                        <div class="uae_-plate" style="transform: scale(1.4); margin: 10px 0;">
                             <div class="plate-code">${car.plateCode}</div>
                             <div class="plate-number">${car.plateNumber}</div>
                         </div>
