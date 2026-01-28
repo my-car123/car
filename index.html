@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المركبات</title>
+    <title>نظام إدارة المركبات الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -12,17 +12,15 @@
 
     <header class="bg-blue-600 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div>
-                    <h1 class="text-xl font-bold">نظام إدارة المركبات</h1>
-                    <div id="liveClock" class="text-sm opacity-90 font-mono">جاري تحميل الوقت...</div>
-                </div>
+            <div>
+                <h1 class="text-xl font-bold">نظام إدارة المركبات</h1>
+                <div id="liveClock" class="text-sm opacity-90 font-mono tracking-wider">جاري تحميل الوقت...</div>
             </div>
             <div class="flex gap-2">
-                <button onclick="window.openAddModal()" class="bg-white text-blue-600 px-3 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition">
+                <button onclick="window.openAddModal()" class="bg-white text-blue-600 px-3 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition shadow-sm">
                     + إضافة سيارة
                 </button>
-                <button onclick="window.logout()" class="bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">
+                <button onclick="window.logout()" class="bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition shadow-sm">
                     خروج
                 </button>
             </div>
@@ -31,53 +29,53 @@
 
     <main class="container mx-auto p-4">
         <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-blue-500 text-center">
-                <p class="text-gray-500 text-xs">إجمالي السيارات</p>
-                <h2 id="totalCars" class="text-2xl font-bold text-blue-600">0</h2>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border-r-8 border-blue-500 text-center">
+                <p class="text-gray-500 text-xs mb-1">إجمالي السيارات</p>
+                <h2 id="totalCars" class="text-3xl font-bold text-blue-600">0</h2>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-red-500 text-center">
-                <p class="text-red-500 text-xs">تنبيهات الانتهاء</p>
-                <h2 id="expiryAlerts" class="text-2xl font-bold text-red-600">0</h2>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border-r-8 border-red-500 text-center">
+                <p class="text-red-500 text-xs mb-1">تنبيهات الانتهاء</p>
+                <h2 id="expiryAlerts" class="text-3xl font-bold text-red-600">0</h2>
             </div>
         </div>
 
         <div class="mb-6">
             <input type="text" id="searchInput" onkeyup="window.filterCars()" 
                    placeholder="ابحث باسم المالك، رقم اللوحة، أو المستخدم..." 
-                   class="w-full p-4 rounded-xl border-none shadow-md focus:ring-2 focus:ring-blue-500 outline-none text-right">
+                   class="w-full p-4 rounded-2xl border-none shadow-md focus:ring-2 focus:ring-blue-500 outline-none text-right placeholder-gray-400">
         </div>
 
         <div id="carList" class="grid gap-4">
             </div>
     </main>
 
-    <footer class="p-6 text-center text-gray-400 text-sm">
+    <footer class="p-8 text-center text-gray-400 text-sm">
         <p>© 2026 جميع الحقوق محفوظة - نظام إدارة المركبات</p>
     </footer>
 
     <div id="carModal" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div class="p-5 border-b flex justify-between items-center sticky top-0 bg-white">
-                <h3 id="modalTitle" class="text-lg font-bold text-blue-600">إضافة سيارة جديدة</h3>
-                <button onclick="window.toggleModal('carModal')" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+        <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                <h3 id="modalTitle" class="text-xl font-bold text-blue-600">إضافة سيارة جديدة</h3>
+                <button onclick="window.toggleModal('carModal')" class="text-gray-400 hover:text-red-500 text-3xl">&times;</button>
             </div>
             <form id="carForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-right">
                 <input type="hidden" id="editDocId">
-                <div><label class="block text-xs text-gray-400 mb-1">رقم اللوحة</label><input type="text" id="plateNumber" required class="form-input text-center font-bold"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">رمز اللوحة</label><input type="text" id="plateCode" required class="form-input text-center font-bold"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">الإمارة</label><input type="text" id="emirate" required class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">اسم المالك</label><input type="text" id="ownerName" required class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">المستخدم</label><input type="text" id="userField" class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">نوع المركبة</label><input type="text" id="type" class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">رقم القاعدة (VIN)</label><input type="text" id="vin" class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">سنة الصنع</label><input type="number" id="year" class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">انتهاء الترخيص</label><input type="date" id="expiryLicense" required class="form-input"></div>
-                <div><label class="block text-xs text-gray-400 mb-1">انتهاء التأمين</label><input type="date" id="expiryInsurance" required class="form-input"></div>
-                <div class="md:col-span-2"><label class="block text-xs text-gray-400 mb-1">ملاحظات</label><textarea id="notes" class="form-input h-20"></textarea></div>
+                <div class="md:col-span-1"><label class="label-text">رقم اللوحة</label><input type="text" id="plateNumber" required class="form-input font-bold text-center text-lg"></div>
+                <div class="md:col-span-1"><label class="label-text">رمز اللوحة</label><input type="text" id="plateCode" required class="form-input font-bold text-center text-lg"></div>
+                <div><label class="label-text">الإمارة</label><input type="text" id="emirate" required class="form-input"></div>
+                <div><label class="label-text">اسم المالك</label><input type="text" id="ownerName" required class="form-input"></div>
+                <div><label class="label-text">المستخدم الحالي</label><input type="text" id="userField" class="form-input"></div>
+                <div><label class="label-text">نوع المركبة</label><input type="text" id="type" class="form-input"></div>
+                <div><label class="label-text">رقم القاعدة (VIN)</label><input type="text" id="vin" class="form-input"></div>
+                <div><label class="label-text">سنة الصنع</label><input type="number" id="year" class="form-input"></div>
+                <div><label class="label-text">تاريخ انتهاء الترخيص</label><input type="date" id="expiryLicense" required class="form-input"></div>
+                <div><label class="label-text">تاريخ انتهاء التأمين</label><input type="date" id="expiryInsurance" required class="form-input"></div>
+                <div class="md:col-span-2"><label class="label-text">ملاحظات إضافية</label><textarea id="notes" class="form-input h-24"></textarea></div>
                 
-                <div class="md:col-span-2 flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-blue flex-1">حفظ</button>
-                    <button type="button" onclick="window.toggleModal('carModal')" class="btn btn-gray">إلغاء</button>
+                <div class="md:col-span-2 flex gap-3 mt-6">
+                    <button type="submit" class="btn-action bg-blue-600 text-white flex-1">حفظ البيانات</button>
+                    <button type="button" onclick="window.toggleModal('carModal')" class="btn-action bg-gray-100 text-gray-600">إلغاء</button>
                 </div>
             </form>
         </div>
