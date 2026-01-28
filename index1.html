@@ -73,7 +73,7 @@
     <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl card-shadow border-b-4 border-blue-600">
         <div id="currentDateTime" class="text-xl font-bold text-blue-800"></div>
         <div class="flex gap-2">
-            <button onclick="login()" id="loginBtn" class="btn btn-blue">جاري التحميل...</button>
+            <button onclick="login()" id="loginBtn" class="btn btn-blue">دخول الأدمن</button>
             <button onclick="logout()" id="logoutBtn" class="btn btn-red hidden">خروج</button>
         </div>
     </header>
@@ -149,13 +149,13 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // قائمة الإيميلات المسموح لها
         const allowedAdmins = [
             "saad323m@gmail.com",
             "n2.saad113@gmail.com",
             "p.my123.car@gmail.com"
         ];
 
+        // تفعيل الساعة
         setInterval(() => {
             const now = new Date();
             document.getElementById('currentDateTime').innerText = now.toLocaleString('en-GB', { 
@@ -163,27 +163,47 @@
             });
         }, 1000);
 
-        window.login = () => signInWithRedirect(auth, provider);
-        window.logout = () => signOut(auth);
+        window.login = () => {
+            signInWithRedirect(auth, provider);
+        };
 
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.reload();
+            });
+        };
+
+        // معالجة نتيجة إعادة التوجيه
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result?.user) {
+                    console.log("تم تسجيل الدخول بنجاح");
+                }
+            })
+            .catch((error) => {
+                alert("حدث خطأ أثناء التوجيه: " + error.message);
+            });
+
+        // مراقبة حالة الدخول
         onAuthStateChanged(auth, (user) => {
-            if (user && allowedAdmins.includes(user.email)) {
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('loginBtn').classList.add('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
-                loadCars();
+            if (user) {
+                if (allowedAdmins.includes(user.email)) {
+                    document.getElementById('app').classList.remove('hidden');
+                    document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    loadCars();
+                } else {
+                    alert("الإيميل " + user.email + " غير مصرح له.");
+                    signOut(auth);
+                }
             } else {
                 document.getElementById('app').classList.add('hidden');
                 document.getElementById('loginBtn').classList.remove('hidden');
                 document.getElementById('logoutBtn').classList.add('hidden');
-                document.getElementById('loginBtn').innerText = "دخول الأدمن";
-                if(user && !allowedAdmins.includes(user.email)) {
-                    alert("عذراً، هذا الحساب لا يملك صلاحيات الدخول.");
-                    signOut(auth);
-                }
             }
         });
 
+        // باقي دوال النظام (دون تغيير لضمان المزايا)
         window.toggleModal = (id) => {
             const m = document.getElementById(id);
             m.classList.toggle('hidden');
@@ -227,7 +247,7 @@
                     });
                 }
                 toggleModal('carModal');
-            } catch (err) { alert("حدث خطأ في النظام!"); }
+            } catch (err) { alert("خطأ: تأكد من إعداد Counters في Firestore"); }
         };
 
         function loadCars() {
