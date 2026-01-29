@@ -352,22 +352,74 @@
             });
         };
 
-        window.instantPrint = (car) => {
-            const pWin = window.open('', '_blank');
-            pWin.document.write(`<html><head><title>Print</title><style>body{direction:rtl;text-align:center;font-family:Arial;padding:20px;} .print-card{border:5px solid #2563eb;padding:20px;border-radius:15px;} .uae-plate{display:inline-flex;border:3px solid #333;height:60px;margin:20px;} .plate-code{background:red;color:white;padding:15px;font-weight:bold;font-size:1.2rem;} .plate-number{padding:15px;font-size:2rem;font-weight:bold;}</style></head><body>
-                <div class="print-card">
-                    <h2>نظام المسعود للمركبات</h2>
-                    <div class="uae-plate"><div class="plate-code">${car.plateCode}</div><div class="plate-number">${car.plateNumber}</div></div>
-                    <div style="text-align:right; font-size:1.2rem;">
-                        <p><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</p>
-                        <p><strong>المالك:</strong> ${car.ownerName}</p>
-                        <p><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</p>
+      window.instantPrint = (car) => {
+    const pWin = window.open('', '', 'width=900,height=900');
+    pWin.document.write(`
+        <html>
+        <head>
+            <title>طباعة بيانات المركبة</title>
+            <style>
+                body { font-family: 'Arial', sans-serif; direction: rtl; text-align: center; padding: 20px; color: #1e293b; }
+                .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; position: relative; }
+                .header-title { color: #2563eb; font-size: 2.5rem; margin-bottom: 5px; font-weight: bold; }
+                .system-id { font-weight: bold; font-size: 1.2rem; color: #64748b; margin-bottom: 20px; }
+                .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; }
+                .plate-code { background: #dc2626; color: white; padding: 0 30px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-left: 4px solid #333; }
+                .plate-number { color: #1a1a1a; padding: 0 35px; font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; }
+                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.3rem; border-top: 2px solid #eee; padding-top: 20px; }
+                .info-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+                .info-item strong { color: #2563eb; margin-left: 10px; }
+                .vin-box { grid-column: span 2; background: #f8fafc; padding: 10px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 1.5rem; border: 1px solid #e2e8f0; margin-top: 10px; }
+                .notes-box { grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fef3c7; font-size: 1.1rem; margin-top: 10px; }
+                .footer-note { margin-top: 40px; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; }
+            </style>
+        </head>
+        <body>
+            <div class="print-card">
+                <div class="header-title">نظام المسعود للمركبات</div>
+                <div class="system-id">ID: ${car.customId}</div>
+                
+                <div class="uae-plate">
+                    <div class="plate-code">${car.plateCode}</div>
+                    <div class="plate-number">${car.plateNumber}</div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item"><strong>المالك:</strong> ${car.ownerName}</div>
+                    <div class="info-item"><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</div>
+                    <div class="info-item"><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
+                    <div class="info-item"><strong>نوع السيارة:</strong> ${car.type || '-'}</div>
+                    <div class="info-item"><strong>سنة الصنع:</strong> ${car.year || '-'}</div>
+                    <div class="info-item"><strong>تاريخ الإضافة:</strong> ${car.createdAt ? new Date(car.createdAt.seconds * 1000).toLocaleDateString('en-GB') : '-'}</div>
+                    <div class="info-item" style="color: #dc2626;"><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</div>
+                    <div class="info-item" style="color: #dc2626;"><strong>انتهاء التأمين:</strong> ${car.expiryInsurance}</div>
+                    
+                    <div class="vin-box">
+                        <span style="font-size: 0.9rem; display: block; color: #64748b; margin-bottom: 5px;">رقم القاعدة (VIN)</span>
+                        ${car.vin || '-----------------'}
+                    </div>
+
+                    <div class="notes-box">
+                        <strong>ملاحظات:</strong> ${car.notes || 'لا يوجد ملاحظات إضافية'}
                     </div>
                 </div>
-                <script>window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };<\/script>
-            </body></html>`);
-            pWin.document.close();
-        };
+
+                <div class="footer-note">
+                    <span>تاريخ الطباعة: ${new Date().toLocaleString('en-GB')}</span>
+                    <span>تطوير: Mohamed Saad</span>
+                </div>
+            </div>
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() { window.close(); }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    pWin.document.close();
+};
 
         window.checkExpiry = (dateStr) => (Math.ceil((new Date(dateStr) - new Date()) / 86400000) <= 15);
         window.deleteCar = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "cars", id)); };
