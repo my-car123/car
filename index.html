@@ -28,7 +28,6 @@
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
         .car-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
-        .alert-border { border: 3px solid #ef4444 !important; }
         footer { margin-top: auto; background: white; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; font-weight: bold; color: #64748b; }
         @media print { body > * { display: none !important; } #printArea { display: block !important; width: 100% !important; } }
     </style>
@@ -67,8 +66,8 @@
 
     <main id="app" class="hidden flex-grow">
         <div id="adminNotifications" class="hidden mb-6 bg-red-50 border-r-8 border-red-600 p-4 rounded-xl shadow-sm">
-            <h4 class="text-red-800 font-bold mb-2">⚠️ تنبيهات المتابعة اليومية:</h4>
-            <ul id="notificationsList" class="text-sm text-red-700 space-y-1"></ul>
+            <h4 class="text-gray-800 font-bold mb-2">⚠️ تنبيهات المتابعة اليومية:</h4>
+            <ul id="notificationsList" class="text-sm space-y-1"></ul>
         </div>
 
         <section id="carsTab" class="tab-content">
@@ -293,94 +292,88 @@
             }
         };
 
-        // --- استبدل دالة checkExpiry الحالية بهذه الدالة المطورة ---
-window.checkExpiry = (dateStr) => {
-    const diffDays = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
-    if (diffDays < 0) return "expired";      // انتهت بالفعل
-    if (diffDays <= 15) return "expiring";  // ستنتهي قريباً (خلال 15 يوم)
-    return "valid";                         // سليمة
-};
+        // دالة فحص التاريخ المحسنة لتحقيق شروطك
+        window.checkExpiry = (dateStr) => {
+            const diffDays = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+            if (diffDays < 0) return "expired"; // انتهت بالفعل
+            if (diffDays <= 15) return "expiring"; // ستنتهي قريباً
+            return "valid"; // سليمة
+        };
 
-// --- استبدل دالة loadCars الحالية بهذا الجزء لضمان عرض الرسائل والألوان المطلوبة ---
-function loadCars() {
-    onSnapshot(query(collection(db, "cars"), orderBy("createdAt", "desc")), (snapshot) => {
-        const list = document.getElementById('carsList');
-        const notifyBox = document.getElementById('adminNotifications');
-        const notifyList = document.getElementById('notificationsList');
-        if(!list) return;
-        list.innerHTML = "";
-        notifyList.innerHTML = "";
-        let total = 0, alerts = 0;
+        function loadCars() {
+            onSnapshot(query(collection(db, "cars"), orderBy("createdAt", "desc")), (snapshot) => {
+                const list = document.getElementById('carsList');
+                const notifyBox = document.getElementById('adminNotifications');
+                const notifyList = document.getElementById('notificationsList');
+                if(!list) return;
+                list.innerHTML = "";
+                notifyList.innerHTML = "";
+                let total = 0, alerts = 0;
+                
+                snapshot.forEach((docSnap) => {
+                    const car = docSnap.data(), id = docSnap.id; 
+                    total++;
 
-        snapshot.forEach((docSnap) => {
-            const car = docSnap.data(), id = docSnap.id; 
-            total++;
+                    const statusL = checkExpiry(car.expiryLicense);
+                    const statusI = checkExpiry(car.expiryInsurance);
+                    
+                    const isExpired = (statusL === "expired" || statusI === "expired");
+                    const isExpiring = (statusL === "expiring" || statusI === "expiring");
 
-            // فحص حالة الترخيص والتأمين
-            const statusLicense = checkExpiry(car.expiryLicense);
-            const statusInsurance = checkExpiry(car.expiryInsurance);
-            
-            // تحديد الحالة القصوى للمركبة (هل هي منتهية أم ستنتهي قريباً؟)
-            const isCritical = (statusLicense === "expired" || statusInsurance === "expired");
-            const isWarning = (statusLicense === "expiring" || statusInsurance === "expiring");
+                    let borderStyle = "";
+                    if (isExpired) {
+                        alerts++;
+                        borderStyle = "border: 4px solid #dc2626 !important;"; // أحمر
+                        notifyList.innerHTML += `<li class="text-red-700 font-bold">• انتباه: السيارة رقم (${car.plateNumber}) انتهت بالفعل!</li>`;
+                    } else if (isExpiring) {
+                        alerts++;
+                        borderStyle = "border: 4px solid #eab308 !important;"; // أصفر
+                        notifyList.innerHTML += `<li class="text-yellow-700 font-bold">• انتباه: هناك سيارة رقم (${car.plateNumber}) ستنتهي قريباً.</li>`;
+                    }
 
-            if (isCritical) {
-                alerts++;
-                notifyList.innerHTML += `<li class="text-red-700 font-bold">• انتباه: السيارة رقم (${car.plateNumber}) انتهت بالفعل!</li>`;
-            } else if (isWarning) {
-                alerts++;
-                notifyList.innerHTML += `<li class="text-yellow-700 font-bold">• انتباه: هناك سيارة رقم (${car.plateNumber}) ستنتهي قريباً.</li>`;
-            }
-
-            // تحديد لون الحدود بناءً على الحالة
-            let borderClass = "";
-            if (isCritical) borderClass = "border-4 border-red-600 shadow-lg shadow-red-100";
-            else if (isWarning) borderClass = "border-4 border-yellow-500 shadow-lg shadow-yellow-100";
-
-            list.innerHTML += `
-                <div class="car-card card-shadow ${borderClass}" data-search="${car.ownerName} ${car.plateNumber} ${car.user}">
-                    <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
-                        <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
-                        <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number font-mono">${car.plateNumber}</div></div>
-                        <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
-                    </div>
-                    <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6 text-right">
-                            <div><p class="text-xs text-gray-400">المستخدم الحالي</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
-                            <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate || '-'}</strong></div>
-                            <div><p class="text-xs text-gray-400">نوع السيارة</p><strong>${car.type || '-'}</strong></div>
-                            <div class="${statusLicense !== 'valid' ? (statusLicense === 'expired' ? 'text-red-600' : 'text-yellow-600') : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong class="font-mono">${car.expiryLicense}</strong></div>
-                            <div class="${statusInsurance !== 'valid' ? (statusInsurance === 'expired' ? 'text-red-600' : 'text-yellow-600') : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
-                            <div><p class="text-xs text-gray-400">سنة الصنع</p><strong class="font-mono">${car.year || '-'}</strong></div>
-                            <div class="col-span-2"><p class="text-xs text-gray-400">رقم القاعدة (VIN)</p><strong class="font-mono uppercase">${car.vin || '-'}</strong></div>
-                            <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || 'لا يوجد ملاحظات'}</p></div>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
-                            <button onclick="showCarHistory('${id}')" class="btn btn-green flex-1 text-sm">📜 سجل حركة العهدة</button>
-                            <button onclick="editCar('${id}')" class="btn btn-blue flex-1 text-sm">تعديل</button>
-                            <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white text-sm">طباعة</button>
-                            <button onclick="deleteCar('${id}')" class="btn btn-red flex-1 text-sm">حذف</button>
-                        </div>
-                    </div>
-                </div>`;
-        });
-
-        document.getElementById('totalCars').innerText = total;
-        document.getElementById('expiryAlerts').innerText = alerts;
-        document.getElementById('searchCountDisplay').innerText = `FOUND: ${total} RECORDS`;
-
-        // تغيير لون خلفية صندوق التنبيهات بناءً على أخطر حالة موجودة
-        if(alerts > 0) {
-            notifyBox.classList.remove('hidden');
-            const hasExpired = snapshot.docs.some(d => checkExpiry(d.data().expiryLicense) === 'expired' || checkExpiry(d.data().expiryInsurance) === 'expired');
-            notifyBox.style.backgroundColor = hasExpired ? '#fef2f2' : '#fffbeb'; // أحمر خفيف للمنتهي، أصفر خفيف للوشيك
-            notifyBox.style.borderColor = hasExpired ? '#dc2626' : '#eab308';
-        } else {
-            notifyBox.classList.add('hidden');
+                    list.innerHTML += `
+                        <div class="car-card card-shadow" style="${borderStyle}" data-search="${car.ownerName} ${car.plateNumber} ${car.user}">
+                            <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
+                                <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
+                                <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number font-mono">${car.plateNumber}</div></div>
+                                <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
+                            </div>
+                            <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6 text-right">
+                                    <div><p class="text-xs text-gray-400">المستخدم الحالي</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
+                                    <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate || '-'}</strong></div>
+                                    <div><p class="text-xs text-gray-400">نوع السيارة</p><strong>${car.type || '-'}</strong></div>
+                                    <div class="${statusL === 'expired' ? 'text-red-600' : (statusL === 'expiring' ? 'text-yellow-600' : '')}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong class="font-mono">${car.expiryLicense}</strong></div>
+                                    <div class="${statusI === 'expired' ? 'text-red-600' : (statusI === 'expiring' ? 'text-yellow-600' : '')}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
+                                    <div><p class="text-xs text-gray-400">سنة الصنع</p><strong class="font-mono">${car.year || '-'}</strong></div>
+                                    <div class="col-span-2"><p class="text-xs text-gray-400">رقم القاعدة (VIN)</p><strong class="font-mono uppercase">${car.vin || '-'}</strong></div>
+                                    <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || 'لا يوجد ملاحظات'}</p></div>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
+                                    <button onclick="showCarHistory('${id}')" class="btn btn-green flex-1 text-sm">📜 سجل حركة العهدة</button>
+                                    <button onclick="editCar('${id}')" class="btn btn-blue flex-1 text-sm">تعديل</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white text-sm">طباعة</button>
+                                    <button onclick="deleteCar('${id}')" class="btn btn-red flex-1 text-sm">حذف</button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('totalCars').innerText = total;
+                document.getElementById('expiryAlerts').innerText = alerts;
+                document.getElementById('searchCountDisplay').innerText = `FOUND: ${total} RECORDS`;
+                
+                if(alerts > 0) {
+                    notifyBox.classList.remove('hidden');
+                    // تلوين الصندوق بناءً على وجود حالة انتهاء فعلية
+                    const hasExpired = snapshot.docs.some(d => checkExpiry(d.data().expiryLicense) === 'expired' || checkExpiry(d.data().expiryInsurance) === 'expired');
+                    notifyBox.style.borderColor = hasExpired ? '#dc2626' : '#eab308';
+                    notifyBox.style.backgroundColor = hasExpired ? '#fef2f2' : '#fffbeb';
+                } else {
+                    notifyBox.classList.add('hidden');
+                }
+            });
         }
-    });
-}
 
         window.filterCars = () => {
             const term = document.getElementById('searchInput').value.toLowerCase();
@@ -389,76 +382,54 @@ function loadCars() {
             });
         };
 
-      window.instantPrint = (car) => {
-    const pWin = window.open('', '', 'width=900,height=900');
-    pWin.document.write(`
-        <html>
-        <head>
-            <title>طباعة بيانات المركبة</title>
-            <style>
-                body { font-family: 'Arial', sans-serif; direction: rtl; text-align: center; padding: 20px; color: #1e293b; }
-                .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; position: relative; }
-                .header-title { color: #2563eb; font-size: 2.5rem; margin-bottom: 5px; font-weight: bold; }
-                .system-id { font-weight: bold; font-size: 1.2rem; color: #64748b; margin-bottom: 20px; }
-                .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; }
-                .plate-code { background: #dc2626; color: white; padding: 0 30px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-left: 4px solid #333; }
-                .plate-number { color: #1a1a1a; padding: 0 35px; font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; }
-                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.3rem; border-top: 2px solid #eee; padding-top: 20px; }
-                .info-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-                .info-item strong { color: #2563eb; margin-left: 10px; }
-                .vin-box { grid-column: span 2; background: #f8fafc; padding: 10px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 1.5rem; border: 1px solid #e2e8f0; margin-top: 10px; }
-                .notes-box { grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fef3c7; font-size: 1.1rem; margin-top: 10px; }
-                .footer-note { margin-top: 40px; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; }
-            </style>
-        </head>
-        <body>
-            <div class="print-card">
-                <div class="header-title">نظام ادارة السيارات</div>
-                <div class="system-id">ID: ${car.customId}</div>
-                
-                <div class="uae-plate">
-                    <div class="plate-code">${car.plateCode}</div>
-                    <div class="plate-number">${car.plateNumber}</div>
-                </div>
-
-                <div class="info-grid">
-                    <div class="info-item"><strong>المالك:</strong> ${car.ownerName}</div>
-                    <div class="info-item"><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</div>
-                    <div class="info-item"><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
-                    <div class="info-item"><strong>نوع السيارة:</strong> ${car.type || '-'}</div>
-                    <div class="info-item"><strong>سنة الصنع:</strong> ${car.year || '-'}</div>
-                    <div class="info-item"><strong>تاريخ الإضافة:</strong> ${car.createdAt ? new Date(car.createdAt.seconds * 1000).toLocaleDateString('en-GB') : '-'}</div>
-                    <div class="info-item" style="color: #dc2626;"><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</div>
-                    <div class="info-item" style="color: #dc2626;"><strong>انتهاء التأمين:</strong> ${car.expiryInsurance}</div>
-                    
-                    <div class="vin-box">
-                        <span style="font-size: 0.9rem; display: block; color: #64748b; margin-bottom: 5px;">رقم القاعدة (VIN)</span>
-                        ${car.vin || '-----------------'}
+        window.instantPrint = (car) => {
+            const pWin = window.open('', '', 'width=900,height=900');
+            pWin.document.write(`
+                <html>
+                <head>
+                    <title>طباعة بيانات المركبة</title>
+                    <style>
+                        body { font-family: 'Arial', sans-serif; direction: rtl; text-align: center; padding: 20px; color: #1e293b; }
+                        .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; position: relative; }
+                        .header-title { color: #2563eb; font-size: 2.5rem; margin-bottom: 5px; font-weight: bold; }
+                        .system-id { font-weight: bold; font-size: 1.2rem; color: #64748b; margin-bottom: 20px; }
+                        .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; }
+                        .plate-code { background: #dc2626; color: white; padding: 0 30px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-left: 4px solid #333; }
+                        .plate-number { color: #1a1a1a; padding: 0 35px; font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.3rem; border-top: 2px solid #eee; padding-top: 20px; }
+                        .info-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+                        .info-item strong { color: #2563eb; margin-left: 10px; }
+                        .vin-box { grid-column: span 2; background: #f8fafc; padding: 10px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 1.5rem; border: 1px solid #e2e8f0; margin-top: 10px; }
+                        .notes-box { grid-column: span 2; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fef3c7; font-size: 1.1rem; margin-top: 10px; }
+                        .footer-note { margin-top: 40px; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-card">
+                        <div class="header-title">نظام ادارة السيارات</div>
+                        <div class="system-id">ID: ${car.customId}</div>
+                        <div class="uae-plate"><div class="plate-code">${car.plateCode}</div><div class="plate-number">${car.plateNumber}</div></div>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>المالك:</strong> ${car.ownerName}</div>
+                            <div class="info-item"><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</div>
+                            <div class="info-item"><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
+                            <div class="info-item"><strong>نوع السيارة:</strong> ${car.type || '-'}</div>
+                            <div class="info-item"><strong>سنة الصنع:</strong> ${car.year || '-'}</div>
+                            <div class="info-item"><strong>تاريخ الإضافة:</strong> ${car.createdAt ? new Date(car.createdAt.seconds * 1000).toLocaleDateString('en-GB') : '-'}</div>
+                            <div class="info-item" style="color: #dc2626;"><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</div>
+                            <div class="info-item" style="color: #dc2626;"><strong>انتهاء التأمين:</strong> ${car.expiryInsurance}</div>
+                            <div class="vin-box"><span style="font-size: 0.9rem; display: block; color: #64748b; margin-bottom: 5px;">رقم القاعدة (VIN)</span>${car.vin || '-----------------'}</div>
+                            <div class="notes-box"><strong>ملاحظات:</strong> ${car.notes || 'لا يوجد ملاحظات إضافية'}</div>
+                        </div>
+                        <div class="footer-note"><span>تاريخ الطباعة: ${new Date().toLocaleString('en-GB')}</span><span>By : system operator </span></div>
                     </div>
+                    <script>window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };<\/script>
+                </body>
+                </html>
+            `);
+            pWin.document.close();
+        };
 
-                    <div class="notes-box">
-                        <strong>ملاحظات:</strong> ${car.notes || 'لا يوجد ملاحظات إضافية'}
-                    </div>
-                </div>
-
-                <div class="footer-note">
-                    <span>تاريخ الطباعة: ${new Date().toLocaleString('en-GB')}</span>
-                    <span>By : system operator </span>
-                </div>
-            </div>
-            <script>
-                window.onload = function() {
-                    window.print();
-                    setTimeout(function() { window.close(); }, 500);
-                };
-            <\/script>
-        </body>
-        </html>
-    `);
-    pWin.document.close();
-};
-
-        window.checkExpiry = (dateStr) => (Math.ceil((new Date(dateStr) - new Date()) / 86400000) <= 15);
         window.deleteCar = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "cars", id)); };
         window.editCar = async (id) => {
             const docSnap = await getDoc(doc(db, "cars", id));
