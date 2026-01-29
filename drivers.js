@@ -166,18 +166,19 @@ window.toggleHistoryAccordion = (id) => {
     if(el) el.classList.toggle('hidden');
 };
 
-// 6. عرض سجل حركات سيارة محددة (تم الإصلاح ليعمل مع الزر الأخضر)
+// 6. عرض سجل حركات سيارة محددة (تم الإصلاح ليعمل بدون "فهرس" إضافي)
 window.showCarHistory = async (carId) => {
     const content = document.getElementById('carHistoryContent');
     const modal = document.getElementById('carHistoryModal');
     
     if(!content || !modal) return;
 
-    content.innerHTML = '<p class="text-center py-4 text-blue-600">جاري تحميل السجل...</p>';
+    content.innerHTML = '<p class="text-center py-4 text-blue-600">جاري جلب السجل...</p>';
     modal.classList.remove('hidden');
 
     try {
-        const q = query(historyRef, where("carId", "==", carId), orderBy("actionDate", "desc"));
+        // نكتفي بفلترة carId فقط برمجياً لتجنب مشكلة الـ Index المطلوبة من Firebase
+        const q = query(historyRef, where("carId", "==", carId));
         const snap = await getDocs(q);
         
         if (snap.empty) {
@@ -185,14 +186,22 @@ window.showCarHistory = async (carId) => {
             return;
         }
 
-        let html = "";
+        // تحويل البيانات لمصفوفة لترتيبها بالأحدث يدوياً
+        let dataList = [];
         snap.forEach(docSnap => {
-            const h = docSnap.data();
+            dataList.push(docSnap.data());
+        });
+
+        // ترتيب البيانات يدوياً بالأحدث
+        dataList.sort((a, b) => (b.actionDate?.seconds || 0) - (a.actionDate?.seconds || 0));
+
+        let html = "";
+        dataList.forEach(h => {
             const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true, day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '...';
             html += `
                 <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-green-500 flex justify-between items-center shadow-sm mb-2">
                     <div>
-                        <p class="text-[10px] text-gray-400 mb-1 italic">السائق المستلم:</p>
+                        <p class="text-[10px] text-gray-400 mb-1 italic text-right">السائق المستلم:</p>
                         <p class="font-bold text-blue-900">${h.driverName}</p>
                     </div>
                     <div class="text-left">
@@ -202,8 +211,8 @@ window.showCarHistory = async (carId) => {
         });
         content.innerHTML = html;
     } catch (e) {
-        console.error(e);
-        content.innerHTML = '<p class="text-red-500 text-center">خطأ في جلب البيانات</p>';
+        console.error("Firebase Error:", e);
+        content.innerHTML = '<p class="text-red-500 text-center py-4 font-bold">حدث خطأ في جلب البيانات من السيرفر</p>';
     }
 };
 
