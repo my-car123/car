@@ -225,9 +225,12 @@
         document.getElementById('carForm').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editDocId').value;
+            const plateNum = document.getElementById('plateNumber').value.trim();
+            const plateCd = document.getElementById('plateCode').value.trim();
+
             const carData = {
-                plateNumber: document.getElementById('plateNumber').value.trim(),
-                plateCode: document.getElementById('plateCode').value.trim(),
+                plateNumber: plateNum,
+                plateCode: plateCd,
                 emirate: document.getElementById('emirate').value,
                 ownerName: document.getElementById('ownerName').value,
                 user: document.getElementById('userField').value,
@@ -239,9 +242,23 @@
                 notes: document.getElementById('notes').value,
                 updatedAt: new Date()
             };
+
             try {
-                if (editId) { await updateDoc(doc(db, "cars", editId), carData); } 
+                if (editId) { 
+                    await updateDoc(doc(db, "cars", editId), carData); 
+                } 
                 else {
+                    // التحقق من عدم التكرار (رقم اللوحة + الرمز)
+                    const q = query(collection(db, "cars"), 
+                        where("plateNumber", "==", plateNum), 
+                        where("plateCode", "==", plateCd)
+                    );
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        alert("تنبيه: هذه السيارة مسجلة بالفعل في النظام برقم اللوحة والرمز المحدد.");
+                        return;
+                    }
+
                     await runTransaction(db, async (transaction) => {
                         const counterRef = doc(db, "settings", "counters");
                         const counterDoc = await transaction.get(counterRef);
@@ -318,7 +335,7 @@
                     <div style="color: #1a1a1a; padding: 0 25px; font-size: 2.2rem; font-weight: 800; letter-spacing: 2px;">${car.plateNumber}</div>
                 </div>
 
-                <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.2rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.2rem;">
                     <div><strong>المالك:</strong> ${car.ownerName}</div>
                     <div><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</div>
                     <div><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
@@ -326,7 +343,7 @@
                     <div><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</div>
                     <div><strong>انتهاء التأمين:</strong> ${car.expiryInsurance}</div>
                     <div style="grid-column: span 2;"><strong>رقم القاعدة:</strong> <span style="font-family: monospace;">${car.vin || '-'}</span></div>
-                    <div style="grid-column: span 2; border-top: 1px solid #eee; pt-10;"><strong>ملاحظات:</strong> ${car.notes || '-'}</div>
+                    <div style="grid-column: span 2; border-top: 1px solid #eee; padding-top: 10px;"><strong>ملاحظات:</strong> ${car.notes || '-'}</div>
                 </div>
                 
                 <div style="margin-top: 50px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #eee; padding-top: 10px;">
@@ -334,7 +351,6 @@
                 </div>
             </div>`;
             
-            // تأخير بسيط لضمان رندر المحتوى قبل الطباعة
             setTimeout(() => { window.print(); }, 300);
         };
 
