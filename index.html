@@ -293,57 +293,94 @@
             }
         };
 
-        function loadCars() {
-            onSnapshot(query(collection(db, "cars"), orderBy("createdAt", "desc")), (snapshot) => {
-                const list = document.getElementById('carsList');
-                const notifyBox = document.getElementById('adminNotifications');
-                const notifyList = document.getElementById('notificationsList');
-                if(!list) return;
-                list.innerHTML = "";
-                notifyList.innerHTML = "";
-                let total = 0, alerts = 0;
-                snapshot.forEach((docSnap) => {
-                    const car = docSnap.data(), id = docSnap.id; total++;
-                    const isExpiring = checkExpiry(car.expiryLicense) || checkExpiry(car.expiryInsurance);
-                    if (isExpiring) {
-                        alerts++;
-                        notifyList.innerHTML += `<li>• انتباه: السيارة (${car.plateNumber}) - ملكية/تأمين يوشك على الانتهاء.</li>`;
-                    }
-                    list.innerHTML += `
-                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" data-search="${car.ownerName} ${car.plateNumber} ${car.user}">
-                            <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
-                                <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
-                                <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number font-mono">${car.plateNumber}</div></div>
-                                <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
-                            </div>
-                            <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6 text-right">
-                                    <div><p class="text-xs text-gray-400">المستخدم الحالي</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
-                                    <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate || '-'}</strong></div>
-                                    <div><p class="text-xs text-gray-400">نوع السيارة</p><strong>${car.type || '-'}</strong></div>
-                                    <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong class="font-mono">${car.expiryLicense}</strong></div>
-                                    <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
-                                    <div><p class="text-xs text-gray-400">سنة الصنع</p><strong class="font-mono">${car.year || '-'}</strong></div>
-                                    <div class="col-span-2"><p class="text-xs text-gray-400">رقم القاعدة (VIN)</p><strong class="font-mono uppercase">${car.vin || '-'}</strong></div>
-                                    <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || 'لا يوجد ملاحظات'}</p></div>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
-                                    <button onclick="showCarHistory('${id}')" class="btn btn-green flex-1 text-sm">📜 سجل حركة العهدة</button>
-                                    <button onclick="editCar('${id}')" class="btn btn-blue flex-1 text-sm">تعديل</button>
-                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white text-sm">طباعة</button>
-                                    <button onclick="deleteCar('${id}')" class="btn btn-red flex-1 text-sm">حذف</button>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-                document.getElementById('totalCars').innerText = total;
-                document.getElementById('expiryAlerts').innerText = alerts;
-                document.getElementById('searchCountDisplay').innerText = `FOUND: ${total} RECORDS`;
-                if(alerts > 0) notifyBox.classList.remove('hidden');
-                else notifyBox.classList.add('hidden');
-            });
+        // --- استبدل دالة checkExpiry الحالية بهذه الدالة المطورة ---
+window.checkExpiry = (dateStr) => {
+    const diffDays = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+    if (diffDays < 0) return "expired";      // انتهت بالفعل
+    if (diffDays <= 15) return "expiring";  // ستنتهي قريباً (خلال 15 يوم)
+    return "valid";                         // سليمة
+};
+
+// --- استبدل دالة loadCars الحالية بهذا الجزء لضمان عرض الرسائل والألوان المطلوبة ---
+function loadCars() {
+    onSnapshot(query(collection(db, "cars"), orderBy("createdAt", "desc")), (snapshot) => {
+        const list = document.getElementById('carsList');
+        const notifyBox = document.getElementById('adminNotifications');
+        const notifyList = document.getElementById('notificationsList');
+        if(!list) return;
+        list.innerHTML = "";
+        notifyList.innerHTML = "";
+        let total = 0, alerts = 0;
+
+        snapshot.forEach((docSnap) => {
+            const car = docSnap.data(), id = docSnap.id; 
+            total++;
+
+            // فحص حالة الترخيص والتأمين
+            const statusLicense = checkExpiry(car.expiryLicense);
+            const statusInsurance = checkExpiry(car.expiryInsurance);
+            
+            // تحديد الحالة القصوى للمركبة (هل هي منتهية أم ستنتهي قريباً؟)
+            const isCritical = (statusLicense === "expired" || statusInsurance === "expired");
+            const isWarning = (statusLicense === "expiring" || statusInsurance === "expiring");
+
+            if (isCritical) {
+                alerts++;
+                notifyList.innerHTML += `<li class="text-red-700 font-bold">• انتباه: السيارة رقم (${car.plateNumber}) انتهت بالفعل!</li>`;
+            } else if (isWarning) {
+                alerts++;
+                notifyList.innerHTML += `<li class="text-yellow-700 font-bold">• انتباه: هناك سيارة رقم (${car.plateNumber}) ستنتهي قريباً.</li>`;
+            }
+
+            // تحديد لون الحدود بناءً على الحالة
+            let borderClass = "";
+            if (isCritical) borderClass = "border-4 border-red-600 shadow-lg shadow-red-100";
+            else if (isWarning) borderClass = "border-4 border-yellow-500 shadow-lg shadow-yellow-100";
+
+            list.innerHTML += `
+                <div class="car-card card-shadow ${borderClass}" data-search="${car.ownerName} ${car.plateNumber} ${car.user}">
+                    <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
+                        <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
+                        <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number font-mono">${car.plateNumber}</div></div>
+                        <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
+                    </div>
+                    <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6 text-right">
+                            <div><p class="text-xs text-gray-400">المستخدم الحالي</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
+                            <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate || '-'}</strong></div>
+                            <div><p class="text-xs text-gray-400">نوع السيارة</p><strong>${car.type || '-'}</strong></div>
+                            <div class="${statusLicense !== 'valid' ? (statusLicense === 'expired' ? 'text-red-600' : 'text-yellow-600') : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong class="font-mono">${car.expiryLicense}</strong></div>
+                            <div class="${statusInsurance !== 'valid' ? (statusInsurance === 'expired' ? 'text-red-600' : 'text-yellow-600') : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
+                            <div><p class="text-xs text-gray-400">سنة الصنع</p><strong class="font-mono">${car.year || '-'}</strong></div>
+                            <div class="col-span-2"><p class="text-xs text-gray-400">رقم القاعدة (VIN)</p><strong class="font-mono uppercase">${car.vin || '-'}</strong></div>
+                            <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || 'لا يوجد ملاحظات'}</p></div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
+                            <button onclick="showCarHistory('${id}')" class="btn btn-green flex-1 text-sm">📜 سجل حركة العهدة</button>
+                            <button onclick="editCar('${id}')" class="btn btn-blue flex-1 text-sm">تعديل</button>
+                            <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white text-sm">طباعة</button>
+                            <button onclick="deleteCar('${id}')" class="btn btn-red flex-1 text-sm">حذف</button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+        document.getElementById('totalCars').innerText = total;
+        document.getElementById('expiryAlerts').innerText = alerts;
+        document.getElementById('searchCountDisplay').innerText = `FOUND: ${total} RECORDS`;
+
+        // تغيير لون خلفية صندوق التنبيهات بناءً على أخطر حالة موجودة
+        if(alerts > 0) {
+            notifyBox.classList.remove('hidden');
+            const hasExpired = snapshot.docs.some(d => checkExpiry(d.data().expiryLicense) === 'expired' || checkExpiry(d.data().expiryInsurance) === 'expired');
+            notifyBox.style.backgroundColor = hasExpired ? '#fef2f2' : '#fffbeb'; // أحمر خفيف للمنتهي، أصفر خفيف للوشيك
+            notifyBox.style.borderColor = hasExpired ? '#dc2626' : '#eab308';
+        } else {
+            notifyBox.classList.add('hidden');
         }
+    });
+}
 
         window.filterCars = () => {
             const term = document.getElementById('searchInput').value.toLowerCase();
