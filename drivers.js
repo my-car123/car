@@ -6,143 +6,165 @@ const historyRef = collection(db, "transfers");
 
 let currentCarId = null;
 
-// دالة تحويل الأرقام العربية إلى إنجليزية لضمان البحث
 const toEn = (n) => String(n).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 
-// 1. التنقل بين التبويبات الرئيسية
+// 1. التنقل الرئيسي
 window.switchTab = (tabId) => {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     document.getElementById(tabId).classList.remove('hidden');
-    
     const btnCars = document.getElementById('btnCarsTab');
     const btnDrivers = document.getElementById('btnDriversTab');
-
     if(tabId === 'carsTab') {
-        if(btnCars) btnCars.className = 'btn btn-blue px-8 shadow-md';
-        if(btnDrivers) btnDrivers.className = 'btn btn-gray px-8 shadow-md';
+        btnCars.className = 'btn btn-blue px-8 shadow-md';
+        btnDrivers.className = 'btn btn-gray px-8 shadow-md';
     } else {
-        if(btnCars) btnCars.className = 'btn btn-gray px-8 shadow-md';
-        if(btnDrivers) btnDrivers.className = 'btn btn-blue px-8 shadow-md';
+        btnCars.className = 'btn btn-gray px-8 shadow-md';
+        btnDrivers.className = 'btn btn-blue px-8 shadow-md';
         window.switchDriverSubTab('list');
     }
 };
 
-// 2. التبديل بين قائمة الأعضاء والأرشيف العميق
-window.switchDriverSubTab = (sub) => {
-    const listDiv = document.getElementById('driverListContent');
-    const historyDiv = document.getElementById('driverHistoryContent');
+// 2. تبديل القائمة والأرشيف (أكورديون)
+window.switchDriverSubTab = (subTab) => {
+    const listContent = document.getElementById('driverListContent');
+    const historyContent = document.getElementById('driverHistoryContent');
     const listBtn = document.getElementById('subTabListBtn');
     const historyBtn = document.getElementById('subTabHistoryBtn');
 
-    if(sub === 'list') {
-        listDiv.classList.remove('hidden');
-        historyDiv.classList.add('hidden');
+    if (subTab === 'list') {
+        listContent.classList.remove('hidden');
+        historyContent.classList.add('hidden');
         listBtn.className = 'btn btn-blue flex-1 max-w-[200px]';
         historyBtn.className = 'btn btn-gray flex-1 max-w-[200px]';
-        loadDrivers();
+        window.loadDrivers();
     } else {
-        listDiv.classList.add('hidden');
-        historyDiv.classList.remove('hidden');
+        listContent.classList.add('hidden');
+        historyContent.classList.remove('hidden');
         listBtn.className = 'btn btn-gray flex-1 max-w-[200px]';
         historyBtn.className = 'btn btn-blue flex-1 max-w-[200px]';
-        loadFullHistory();
+        window.loadTransferHistory();
     }
 };
 
-// 3. إدارة الأعضاء (إضافة، عرض، حذف)
+// 3. إضافة وتعديل وحذف العضو (مع أزرار الاتصال)
 window.addNewDriver = async () => {
     const name = document.getElementById('driverName').value.trim();
-    const phone = document.getElementById('driverPhone').value.trim();
-    if(!name) return alert("يرجى إدخال اسم العضو");
+    const phone = toEn(document.getElementById('driverPhone').value.trim());
+    if (!name || !phone) return alert("يرجى إدخال البيانات");
     try {
         await addDoc(driversRef, { name, phone, createdAt: serverTimestamp() });
         document.getElementById('driverName').value = "";
         document.getElementById('driverPhone').value = "";
-    } catch(e) { alert("خطأ في حفظ العضو"); }
+        alert("تمت الإضافة بنجاح");
+    } catch (e) { alert("خطأ في الحفظ"); }
 };
 
-function loadDrivers() {
-    onSnapshot(query(driversRef, orderBy("createdAt", "desc")), (snap) => {
-        const container = document.getElementById('driversList');
-        if(!container) return;
-        container.innerHTML = "";
-        snap.forEach(docSnap => {
+window.loadDrivers = () => {
+    onSnapshot(query(driversRef, orderBy("createdAt", "desc")), (snapshot) => {
+        const list = document.getElementById('driversList');
+        if(!list) return;
+        list.innerHTML = "";
+        snapshot.forEach((docSnap) => {
             const d = docSnap.data();
-            container.innerHTML += `
-                <div class="bg-white p-4 rounded-xl shadow border-r-4 border-blue-500 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-lg text-blue-900">${d.name}</h4>
-                        <p class="text-sm text-gray-500 font-mono">${d.phone || '-'}</p>
+            const id = docSnap.id;
+            list.innerHTML += `
+                <div class="bg-white rounded-xl card-shadow border-r-4 border-blue-600 overflow-hidden mb-3">
+                    <div onclick="toggleDrAccordion('${id}')" class="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-blue-900">${d.name}</h3>
+                        <span class="text-blue-500 font-mono text-sm">التفاصيل ▾</span>
                     </div>
-                    <button onclick="deleteDriver('${docSnap.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-full">🗑️</button>
+                    <div id="dr-content-${id}" class="hidden p-4 border-t bg-gray-50 transition-all">
+                        <div class="mb-3 text-gray-600 font-mono text-center font-bold">${toEn(d.phone)}</div>
+                        <div class="flex gap-2 mb-4">
+                            <button onclick="window.location.href='tel:${d.phone}'" class="btn btn-blue flex-1 !py-2 text-sm">📞 اتصال</button>
+                            <button onclick="window.location.href='https://wa.me/${d.phone.replace(/\+/g,'')}'" class="btn bg-green-600 text-white flex-1 !py-2 text-sm">📱 واتساب</button>
+                        </div>
+                        <div class="flex justify-around border-t pt-2">
+                            <button onclick="editDriver('${id}', '${d.name}', '${d.phone}')" class="text-blue-600 font-bold text-xs">تعديل</button>
+                            <button onclick="deleteDriver('${id}')" class="text-red-600 font-bold text-xs">حذف</button>
+                        </div>
+                    </div>
                 </div>`;
         });
     });
-}
+};
 
-window.deleteDriver = async (id) => { if(confirm("هل أنت متأكد من حذف العضو؟")) await deleteDoc(doc(db, "drivers", id)); };
+window.toggleDrAccordion = (id) => document.getElementById(`dr-content-${id}`)?.classList.toggle('hidden');
 
-// 4. نظام الأرشيف المطور (Deep Archive)
-function loadFullHistory() {
-    onSnapshot(query(historyRef, orderBy("actionDate", "desc")), (snap) => {
+// 4. الأرشيف الكامل (مع استعادة شكل اللوحة الإماراتي)
+window.loadTransferHistory = () => {
+    onSnapshot(query(historyRef, orderBy("actionDate", "desc")), (snapshot) => {
         const container = document.getElementById('historyCardsContainer');
         if(!container) return;
+        if (snapshot.empty) { container.innerHTML = "<p class='text-center text-gray-400'>الأرشيف فارغ</p>"; return; }
+
+        const grouped = {};
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (!grouped[data.driverName]) grouped[data.driverName] = [];
+            grouped[data.driverName].push({ id: docSnap.id, ...data });
+        });
+
         container.innerHTML = "";
-        snap.forEach(docSnap => {
-            const h = docSnap.data();
-            const dateStr = h.actionDate ? h.actionDate.toDate().toLocaleString('ar-AE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '...';
+        Object.keys(grouped).forEach(driverName => {
+            const driverId = driverName.replace(/\s+/g, '-');
+            const moves = grouped[driverName];
             container.innerHTML += `
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 history-item" data-search="${h.driverName} ${h.carPlate}">
-                    <div class="flex justify-between items-start">
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">${h.carPlate}</span>
-                        <span class="text-[10px] text-gray-400 font-mono">${dateStr}</span>
+                <div class="bg-white rounded-xl border border-gray-200 card-shadow overflow-hidden mb-3">
+                    <div onclick="toggleHistoryAccordion('${driverId}')" class="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center bg-blue-50/30">
+                        <div class="text-right">
+                             <p class="font-bold text-blue-900">المستلم: ${driverName}</p>
+                             <p class="text-xs text-gray-500">عدد الحركات: ${moves.length}</p>
+                        </div>
+                        <span class="text-orange-500 text-xs font-bold">عرض السجل ▾</span>
                     </div>
-                    <div class="mt-2 text-gray-700">
-                        استلمها العضو: <span class="font-bold text-orange-600">${h.driverName}</span>
+                    <div id="hist-content-${driverId}" class="hidden p-4 bg-white border-t">
+                        ${moves.map(m => {
+                            const date = m.actionDate ? new Date(m.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true}) : '...';
+                            const parts = m.carPlate ? m.carPlate.split(' ') : ['-','-'];
+                            return `
+                            <div class="flex items-center justify-between border-b py-3 last:border-0">
+                                <div class="uae-plate scale-75 origin-right">
+                                    <div class="plate-code">${parts[1] || ''}</div>
+                                    <div class="plate-number font-mono">${parts[0] || ''}</div>
+                                </div>
+                                <div class="text-left"><p class="text-[10px] font-bold text-gray-500 font-mono">${toEn(date)}</p></div>
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
         });
     });
-}
-
-// 5. محرك البحث في الأرشيف
-window.filterHistory = () => {
-    const term = document.getElementById('historySearchInput').value.toLowerCase();
-    document.querySelectorAll('.history-item').forEach(item => {
-        const text = item.getAttribute('data-search').toLowerCase();
-        item.style.display = text.includes(term) ? 'block' : 'none';
-    });
 };
 
-// 6. عرض سجل "سيارة محددة" فقط
+window.toggleHistoryAccordion = (id) => document.getElementById(`hist-content-${id}`)?.classList.toggle('hidden');
+
+// 5. استعادة جلب سجل حركة المركبة (الذي تعطل)
 window.showCarHistory = async (carId) => {
-    currentCarId = carId;
-    const modal = document.getElementById('carHistoryModal');
     const content = document.getElementById('carHistoryContent');
-    content.innerHTML = '<p class="text-center p-4">جاري تحميل السجل...</p>';
+    const modal = document.getElementById('carHistoryModal');
+    if(!content || !modal) return;
+    content.innerHTML = '<p class="text-center text-blue-600">جاري جلب السجل...</p>';
     modal.classList.remove('hidden');
 
-    const q = query(historyRef, where("carId", "==", carId), orderBy("actionDate", "desc"));
-    const snap = await getDocs(q);
-    
-    if(snap.empty) {
-        content.innerHTML = '<p class="text-center p-4 text-gray-500 text-sm italic">لا توجد حركات سابقة مسجلة لهذه السيارة</p>';
-        return;
-    }
+    try {
+        const q = query(historyRef, where("carId", "==", carId));
+        const snap = await getDocs(q);
+        let dataList = [];
+        snap.forEach(docSnap => dataList.push(docSnap.data()));
+        dataList.sort((a, b) => (b.actionDate?.seconds || 0) - (a.actionDate?.seconds || 0));
 
-    content.innerHTML = "";
-    snap.forEach(docSnap => {
-        const h = docSnap.data();
-        const dateStr = h.actionDate ? h.actionDate.toDate().toLocaleString('ar-AE') : '...';
-        content.innerHTML += `
-            <div class="inner-history-item bg-green-50 p-3 rounded-lg border-r-4 border-green-500 text-sm" data-search="${dateStr} ${h.driverName}">
-                <div class="flex justify-between font-bold text-green-800 mb-1">
-                    <span>${h.driverName}</span>
-                    <span class="text-[10px] font-mono">${dateStr}</span>
-                </div>
-                <div class="text-xs text-gray-600 italic">تم نقل العهدة بنجاح</div>
-            </div>`;
-    });
+        if (dataList.length === 0) { content.innerHTML = '<p class="text-center text-gray-400">لا يوجد سجل</p>'; return; }
+
+        content.innerHTML = dataList.map(h => {
+            const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true, day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '...';
+            return `
+                <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-green-500 flex justify-between items-center shadow-sm mb-2 inner-history-item" data-search="${h.driverName} ${date}">
+                    <div><p class="text-[10px] text-gray-400 mb-1 italic text-right">المستلم:</p><p class="font-bold text-blue-900">${h.driverName}</p></div>
+                    <div class="text-left"><p class="text-[10px] font-mono text-gray-600 bg-white px-2 py-1 rounded border shadow-sm">${toEn(date)}</p></div>
+                </div>`;
+        }).join('');
+    } catch (e) { content.innerHTML = '<p class="text-red-500">خطأ في التحميل</p>'; }
 };
 
 window.filterInnerHistory = () => {
@@ -154,44 +176,35 @@ window.filterInnerHistory = () => {
 
 window.closeCarHistoryModal = () => document.getElementById('carHistoryModal').classList.add('hidden');
 
-// 7. تبديل العهدة
+// 6. نقل العهدة
 window.openAssignDriver = async (carId) => {
     currentCarId = carId;
     const select = document.getElementById('driverSelect');
     select.innerHTML = '<option value="">جاري التحميل...</option>';
     document.getElementById('driverAssignModal').classList.remove('hidden');
-    const snapshot = await getDocs(query(driversRef, orderBy("name", "asc")));
+    const snap = await getDocs(query(driversRef, orderBy("name", "asc")));
     select.innerHTML = '<option value="">-- اختر العضــو --</option>';
-    snapshot.forEach(doc => { select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`; });
-};
-
-window.closeAssignModal = () => { 
-    document.getElementById('driverAssignModal').classList.add('hidden'); 
-    currentCarId = null; 
+    snap.forEach(doc => select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`);
 };
 
 window.confirmAssignDriver = async () => {
     const selectedDriver = document.getElementById('driverSelect').value;
-    if (!selectedDriver || !currentCarId) return alert("يرجى اختيار العضــو");
-    
+    if (!selectedDriver || !currentCarId) return alert("اختر العضو");
     try {
-        const carSnap = await getDoc(doc(db, "cars", currentCarId));
+        const carRef = doc(db, "cars", currentCarId);
+        const carSnap = await getDoc(carRef);
         const carData = carSnap.data();
-
-        if (carData.user === selectedDriver) {
-            alert(`خطأ: العضــو (${selectedDriver}) هو المتعهد الحالي بالفعل.`);
-            return;
-        }
-
-        await updateDoc(doc(db, "cars", currentCarId), { user: selectedDriver });
-        await addDoc(historyRef, {
-            carId: currentCarId,
-            carPlate: (carData.plateNumber + " " + carData.plateCode),
-            driverName: selectedDriver,
-            actionDate: serverTimestamp()
-        });
-        
-        alert("تم نقل العهدة وتسجيل الحركة بنجاح");
-        closeAssignModal();
-    } catch (e) { alert("حدث خطأ أثناء نقل العهدة"); }
+        if (carData.user === selectedDriver) return alert("العضو مستلم بالفعل");
+        await updateDoc(carRef, { user: selectedDriver });
+        await addDoc(historyRef, { carId: currentCarId, carPlate: (carData.plateNumber + " " + carData.plateCode), driverName: selectedDriver, actionDate: serverTimestamp() });
+        alert("تم النقل");
+        window.closeAssignModal();
+    } catch (e) { alert("فشل النقل"); }
 };
+
+window.closeAssignModal = () => document.getElementById('driverAssignModal').classList.add('hidden');
+window.editDriver = async (id, oldN, oldP) => {
+    const n = prompt("الاسم:", oldN); const p = prompt("الهاتف:", oldP);
+    if (n && p) await updateDoc(doc(db, "drivers", id), { name: n, phone: toEn(p) });
+};
+window.deleteDriver = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "drivers", id)); };
