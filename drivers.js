@@ -67,7 +67,7 @@ window.addNewDriver = async () => {
     } catch (e) { alert("خطأ في الحفظ"); }
 };
 
-// 4. عرض السائقين
+// 4. عرض الأعضــاء
 window.loadDrivers = () => {
     const q = query(driversRef, orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -204,7 +204,7 @@ window.showCarHistory = async (carId) => {
             html += `
                 <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-green-500 flex justify-between items-center shadow-sm mb-2">
                     <div>
-                        <p class="text-[10px] text-gray-400 mb-1 italic text-right">السائق المستلم:</p>
+                        <p class="text-[10px] text-gray-400 mb-1 italic text-right">العضــو المستلم:</p>
                         <p class="font-bold text-blue-900">${h.driverName}</p>
                     </div>
                     <div class="text-left">
@@ -237,7 +237,7 @@ window.editDriver = async (id, oldName, oldPhone) => {
 };
 
 window.deleteDriver = async (id) => {
-    if (confirm("هل أنت متأكد؟ سيتم حذف السائق نهائياً")) await deleteDoc(doc(db, "drivers", id));
+    if (confirm("هل أنت متأكد؟ سيتم حذف العضــو نهائياً")) await deleteDoc(doc(db, "drivers", id));
 };
 
 window.openAssignDriver = async (carId) => {
@@ -247,7 +247,7 @@ window.openAssignDriver = async (carId) => {
     select.innerHTML = '<option value="">جاري التحميل...</option>';
     document.getElementById('driverAssignModal').classList.remove('hidden');
     const snapshot = await getDocs(query(driversRef, orderBy("name", "asc")));
-    select.innerHTML = '<option value="">-- اختر السائق --</option>';
+    select.innerHTML = '<option value="">-- اختر العضــو --</option>';
     snapshot.forEach(doc => { select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`; });
 };
 
@@ -259,14 +259,14 @@ window.closeAssignModal = () => {
 
 window.confirmAssignDriver = async () => {
     const selectedDriver = document.getElementById('driverSelect').value;
-    if (!selectedDriver || !currentCarId) return alert("يرجى اختيار السائق");
+    if (!selectedDriver || !currentCarId) return alert("يرجى اختيار العضــو");
     
     try {
         const carSnap = await getDoc(doc(db, "cars", currentCarId));
         const carData = carSnap.data();
 
         if (carData.user === selectedDriver) {
-            alert(`خطأ: السائق (${selectedDriver}) هو المتعهد الحالي بالفعل.`);
+            alert(`خطأ: العضــو (${selectedDriver}) هو المتعهد الحالي بالفعل.`);
             return;
         }
 
