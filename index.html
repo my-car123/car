@@ -21,6 +21,7 @@
         .btn-red { background-color: #dc2626; color: white; }
         .btn-gray { background-color: #64748b; color: white; }
         .btn-green { background-color: #10b981; color: white; }
+        .btn-purple { background-color: #7c3aed; color: white; }
         .uae-plate { display: inline-flex; align-items: center; border: 2px solid #333; border-radius: 6px; background: white; overflow: hidden; height: 45px; font-family: Arial, sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .plate-code { background: #dc2626; color: white; padding: 0 12px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; border-left: 2px solid #333; }
         .plate-number { color: #1a1a1a; padding: 0 15px; font-size: 1.6rem; font-weight: 800; letter-spacing: 1px; }
@@ -117,6 +118,17 @@
     </main>
 
     <footer>تطوير وتصميم: <span class="text-blue-600 font-mono">Mohamed Saad</span> &copy; 2026</footer>
+
+    <div id="carHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[70]">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 card-shadow border-t-8 border-blue-600">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-blue-800">سجل حركات المركبة</h2>
+                <button onclick="closeCarHistoryModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+            </div>
+            <div id="carHistoryContent" class="space-y-3 max-h-[60vh] overflow-y-auto p-2"></div>
+            <button onclick="closeCarHistoryModal()" class="btn btn-gray w-full mt-4">إغلاق</button>
+        </div>
+    </div>
 
     <div id="driverAssignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 card-shadow">
@@ -249,7 +261,6 @@
                     toggleModal('carModal');
                 } 
                 else {
-                    // التحقق "الذري" داخل معاملة Firestore لضمان عدم التكرار نهائياً
                     await runTransaction(db, async (transaction) => {
                         const q = query(collection(db, "cars"), 
                             where("plateNumber", "==", plateNum), 
@@ -258,7 +269,7 @@
                         const existingDocs = await getDocs(q);
                         
                         if (!existingDocs.empty) {
-                            throw "duplicate"; // إيقاف المعاملة فوراً
+                            throw "duplicate"; 
                         }
 
                         const counterRef = doc(db, "settings", "counters");
@@ -309,10 +320,11 @@
                                     <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || 'لا يوجد ملاحظات'}</p></div>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
-                                    <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1">تبديل العهدة</button>
-                                    <button onclick="editCar('${id}')" class="btn btn-blue flex-1">تعديل</button>
-                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white">طباعة</button>
-                                    <button onclick="deleteCar('${id}')" class="btn btn-red flex-1">حذف</button>
+                                    <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
+                                    <button onclick="showCarHistory('${id}')" class="btn btn-purple flex-1 text-sm">📜 سجل الحركة</button>
+                                    <button onclick="editCar('${id}')" class="btn btn-blue flex-1 text-sm">تعديل</button>
+                                    <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white text-sm">طباعة</button>
+                                    <button onclick="deleteCar('${id}')" class="btn btn-red flex-1 text-sm">حذف</button>
                                 </div>
                             </div>
                         </div>`;
