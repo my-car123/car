@@ -166,11 +166,15 @@ window.toggleHistoryAccordion = (id) => {
     if(el) el.classList.toggle('hidden');
 };
 
-// 6. عرض سجل حركات سيارة محددة (المودال الجديد)
+// 6. عرض سجل حركات سيارة محددة (تم الإصلاح ليعمل مع الزر الأخضر)
 window.showCarHistory = async (carId) => {
     const content = document.getElementById('carHistoryContent');
-    content.innerHTML = '<p class="text-center py-4">جاري تحميل السجل...</p>';
-    document.getElementById('carHistoryModal').classList.remove('hidden');
+    const modal = document.getElementById('carHistoryModal');
+    
+    if(!content || !modal) return;
+
+    content.innerHTML = '<p class="text-center py-4 text-blue-600">جاري تحميل السجل...</p>';
+    modal.classList.remove('hidden');
 
     try {
         const q = query(historyRef, where("carId", "==", carId), orderBy("actionDate", "desc"));
@@ -186,7 +190,7 @@ window.showCarHistory = async (carId) => {
             const h = docSnap.data();
             const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true, day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '...';
             html += `
-                <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-purple-500 flex justify-between items-center shadow-sm">
+                <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-green-500 flex justify-between items-center shadow-sm mb-2">
                     <div>
                         <p class="text-[10px] text-gray-400 mb-1 italic">السائق المستلم:</p>
                         <p class="font-bold text-blue-900">${h.driverName}</p>
@@ -198,12 +202,14 @@ window.showCarHistory = async (carId) => {
         });
         content.innerHTML = html;
     } catch (e) {
+        console.error(e);
         content.innerHTML = '<p class="text-red-500 text-center">خطأ في جلب البيانات</p>';
     }
 };
 
 window.closeCarHistoryModal = () => {
-    document.getElementById('carHistoryModal').classList.add('hidden');
+    const modal = document.getElementById('carHistoryModal');
+    if(modal) modal.classList.add('hidden');
 };
 
 window.editDriver = async (id, oldName, oldPhone) => {
@@ -221,6 +227,7 @@ window.deleteDriver = async (id) => {
 window.openAssignDriver = async (carId) => {
     currentCarId = carId;
     const select = document.getElementById('driverSelect');
+    if(!select) return;
     select.innerHTML = '<option value="">جاري التحميل...</option>';
     document.getElementById('driverAssignModal').classList.remove('hidden');
     const snapshot = await getDocs(query(driversRef, orderBy("name", "asc")));
@@ -228,7 +235,11 @@ window.openAssignDriver = async (carId) => {
     snapshot.forEach(doc => { select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`; });
 };
 
-window.closeAssignModal = () => { document.getElementById('driverAssignModal').classList.add('hidden'); currentCarId = null; };
+window.closeAssignModal = () => { 
+    const modal = document.getElementById('driverAssignModal');
+    if(modal) modal.classList.add('hidden'); 
+    currentCarId = null; 
+};
 
 window.confirmAssignDriver = async () => {
     const selectedDriver = document.getElementById('driverSelect').value;
