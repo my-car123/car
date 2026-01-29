@@ -218,7 +218,7 @@
             } else {
                 if(user) signOut(auth);
                 appMain.classList.add('hidden');
-                if(mainNav) mainNav.classList.remove('hidden');
+                if(mainNav) mainNav.classList.add('hidden');
                 loginSection.classList.remove('hidden');
                 userProfile.classList.add('hidden');
             }
@@ -342,34 +342,47 @@
         };
 
         window.instantPrint = (car) => {
-            const printArea = document.getElementById('printArea');
-            printArea.innerHTML = `
-            <div style="padding: 40px; border: 8px double #2563eb; text-align: center; direction: rtl; font-family: 'Tajawal', sans-serif; background: #fff;">
-                <h1 style="color: #2563eb; margin-bottom: 5px;">بطاقة بيانات مركبة</h1>
-                <p style="font-weight: bold; color: #64748b;">${car.customId}</p>
-                <hr style="border: 1px solid #e2e8f0; margin: 20px 0;">
-                
-                <div style="display: inline-flex; align-items: center; border: 3px solid #333; border-radius: 8px; background: white; overflow: hidden; height: 60px; margin: 20px 0;">
-                    <div style="background: #dc2626; color: white; padding: 0 20px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.8rem; border-left: 3px solid #333;">${car.plateCode}</div>
-                    <div style="color: #1a1a1a; padding: 0 25px; font-size: 2.2rem; font-weight: 800; letter-spacing: 2px;">${car.plateNumber}</div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.2rem;">
-                    <div><strong>المالك:</strong> ${car.ownerName}</div>
-                    <div><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</div>
-                    <div><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
-                    <div><strong>نوع السيارة:</strong> ${car.type || '-'}</div>
-                    <div><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</div>
-                    <div><strong>انتهاء التأمين:</strong> ${car.expiryInsurance}</div>
-                    <div style="grid-column: span 2;"><strong>رقم القاعدة:</strong> <span style="font-family: monospace;">${car.vin || '-'}</span></div>
-                    <div style="grid-column: span 2; border-top: 1px solid #eee; padding-top: 10px;"><strong>ملاحظات:</strong> ${car.notes || '-'}</div>
-                </div>
-                
-                <div style="margin-top: 50px; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #eee; padding-top: 10px;">
-                    تمت الطباعة بواسطة نظام المسعود في: ${new Date().toLocaleString('ar-EG')}
-                </div>
-            </div>`;
-            setTimeout(() => { window.print(); }, 300);
+            const pWin = window.open('', '', 'width=900,height=900');
+            pWin.document.write(`
+                <html>
+                <head>
+                    <title>Print Card</title>
+                    <style>
+                        body { font-family: 'Arial', sans-serif; direction: rtl; text-align: center; padding: 20px; }
+                        .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; }
+                        .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 70px; margin: 20px 0; }
+                        .plate-code { background: #dc2626; color: white; padding: 0 25px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem; border-left: 4px solid #333; }
+                        .plate-number { color: #1a1a1a; padding: 0 30px; font-size: 3rem; font-weight: 800; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: right; margin-top: 30px; font-size: 1.4rem; }
+                        .footer-note { margin-top: 40px; font-size: 0.9rem; color: #777; border-top: 1px solid #ccc; padding-top: 10px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-card">
+                        <h1 style="color: #2563eb; font-size: 2.5rem; margin-bottom: 0;">نظام المسعود للمركبات</h1>
+                        <p style="font-weight: bold; font-size: 1.2rem;">ID: ${car.customId}</p>
+                        <div class="uae-plate">
+                            <div class="plate-code">${car.plateCode}</div>
+                            <div class="plate-number">${car.plateNumber}</div>
+                        </div>
+                        <div class="info-grid">
+                            <div><strong>المالك:</strong> ${car.ownerName}</div>
+                            <div><strong>المستخدم:</strong> ${car.user || 'غير محدد'}</div>
+                            <div><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
+                            <div><strong>النوع:</strong> ${car.type || '-'}</div>
+                            <div><strong>انتهاء الترخيص:</strong> ${car.expiryLicense}</div>
+                            <div><strong>انتهاء التأمين:</strong> ${car.expiryInsurance}</div>
+                            <div style="grid-column: span 2;"><strong>رقم القاعدة:</strong> <span style="font-family: monospace;">${car.vin || '-'}</span></div>
+                        </div>
+                        <div class="footer-note">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')}</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            pWin.document.close();
+            pWin.focus();
+            pWin.print();
+            pWin.close();
         };
 
         window.checkExpiry = (dateStr) => (Math.ceil((new Date(dateStr) - new Date()) / 86400000) <= 15);
