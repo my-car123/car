@@ -27,7 +27,8 @@
         .plate-number { color: #1a1a1a; padding: 0 15px; font-size: 1.6rem; font-weight: 800; letter-spacing: 1px; }
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
-        .car-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
+        .car-card, .emp-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
+        .emp-card { border-color: #7c3aed !important; }
         footer { margin-top: auto; background: white; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; font-weight: bold; color: #64748b; }
         @media print { body > * { display: none !important; } #printArea { display: block !important; width: 100% !important; } }
     </style>
@@ -62,6 +63,7 @@
     <nav id="mainNav" class="hidden flex justify-center gap-4 mb-6">
         <button onclick="switchTab('carsTab')" id="btnCarsTab" class="btn btn-blue px-8 shadow-md">إدارة السيارات</button>
         <button onclick="switchTab('driversTab')" id="btnDriversTab" class="btn btn-gray px-8 shadow-md">إدارة الأعضــاء</button>
+        <button onclick="switchTab('employeesTab')" id="btnEmployeesTab" class="btn btn-gray px-8 shadow-md">إدارة الموظفين</button>
     </nav>
 
     <main id="app" class="hidden flex-grow">
@@ -121,9 +123,69 @@
                 </div>
             </div>
         </section>
+
+        <section id="employeesTab" class="tab-content hidden">
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-purple-500">
+                    <h3 class="text-gray-500 mb-2 font-bold">إجمالي الموظفين</h3>
+                    <p id="totalEmployees" class="text-3xl font-bold font-mono">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-red-500">
+                    <h3 class="text-gray-500 mb-2 font-bold">تنبيهات الموظفين</h3>
+                    <p id="empExpiryAlerts" class="text-3xl font-bold text-red-600 font-mono">0</p>
+                </div>
+                <button onclick="document.getElementById('employeeModal').classList.remove('hidden')" class="btn btn-purple h-full flex items-center justify-center text-xl shadow-lg">إضافة موظف جديد +</button>
+            </section>
+
+            <div id="empNotificationsBox" class="hidden mb-6 bg-purple-50 border-r-8 border-purple-600 p-4 rounded-xl shadow-sm">
+                <h4 class="text-purple-800 font-bold mb-2">⚠️ تنبيهات المستندات المنتهية:</h4>
+                <ul id="empNotificationsList" class="text-sm space-y-1"></ul>
+            </div>
+
+            <div class="search-box mb-6">
+                <input type="text" id="empSearchInput" onkeyup="filterEmployees()" placeholder="ابحث باسم الموظف، رقم الملف، أو موقع العمل..." class="border-2 border-purple-600">
+            </div>
+            <div id="employeesList" class="space-y-4"></div>
+        </section>
     </main>
 
     <footer>تطوير وتصميم: <span class="text-blue-600 font-mono">Mohamed Saad</span> &copy; 2026</footer>
+
+    <div id="employeeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[80]">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow border-t-8 border-purple-600 text-right">
+            <h2 id="empModalTitle" class="text-2xl font-bold mb-6 text-purple-700 border-b pb-2 text-center">بيانات الموظف</h2>
+            <form id="employeeForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="hidden" id="empEditDocId">
+                <div><label class="block mb-2 font-bold">رقم الملف</label><input type="text" id="empFileNumber" placeholder="أدخل رقم الملف" required></div>
+                <div><label class="block mb-2 font-bold">اسم الموظف</label><input type="text" id="empName" placeholder="الاسم الكامل" required></div>
+                <div><label class="block mb-2 font-bold">الجنسية</label><input type="text" id="empNationality" placeholder="الجنسية"></div>
+                <div>
+                    <label class="block mb-2 font-bold">الكفيل</label>
+                    <input list="sponsorsList" id="empSponsor" placeholder="اختر أو اكتب اسم الكفيل">
+                    <datalist id="sponsorsList">
+                        <option value="احمد رحمه">
+                        <option value="ام جابر">
+                        <option value="جابر رحمه">
+                        <option value="مسعود رحمه">
+                        <option value="محمد رحمه">
+                        <option value="خالد رحمه">
+                        <option value="مريم رحمه">
+                        <option value="روضه رحمه">
+                        <option value="مجموعة رحمه المسعود">
+                        <option value="ستانفورد الطبي">
+                    </datalist>
+                </div>
+                <div class="md:col-span-2"><label class="block mb-2 font-bold">مكان العمل</label><input type="text" id="empWorkLocation" placeholder="موقع العمل الحالي"></div>
+                <div class="bg-blue-50 p-3 rounded-lg"><label class="block mb-2 font-bold text-blue-700">انتهاء الإقامة</label><input type="date" id="residencyEnd" required></div>
+                <div class="bg-green-50 p-3 rounded-lg"><label class="block mb-2 font-bold text-green-700">انتهاء بطاقة العمل</label><input type="date" id="workCardEnd" required></div>
+                <div class="bg-red-50 p-3 rounded-lg md:col-span-2"><label class="block mb-2 font-bold text-red-700">انتهاء التأمين الطبي</label><input type="date" id="medicalEnd" required></div>
+                <div class="md:col-span-2 flex gap-4 mt-6">
+                    <button type="submit" class="btn btn-purple flex-1 text-lg">حفظ البيانات</button>
+                    <button type="button" onclick="closeEmpModal()" class="btn btn-gray flex-1 text-lg">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="carHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[70]">
         <div class="bg-white rounded-2xl w-full max-w-lg p-6 card-shadow border-t-8 border-green-600">
@@ -192,6 +254,29 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
+
+        // تحديث دالة التنقل لتشمل تبويب الموظفين
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            const btnCars = document.getElementById('btnCarsTab');
+            const btnDrivers = document.getElementById('btnDriversTab');
+            const btnEmps = document.getElementById('btnEmployeesTab');
+
+            btnCars.className = 'btn btn-gray px-8 shadow-md';
+            btnDrivers.className = 'btn btn-gray px-8 shadow-md';
+            if(btnEmps) btnEmps.className = 'btn btn-gray px-8 shadow-md';
+
+            if(tabId === 'carsTab') {
+                btnCars.className = 'btn btn-blue px-8 shadow-md';
+            } else if(tabId === 'driversTab') {
+                btnDrivers.className = 'btn btn-blue px-8 shadow-md';
+                if(window.switchDriverSubTab) window.switchDriverSubTab('list');
+            } else if(tabId === 'employeesTab') {
+                if(btnEmps) btnEmps.className = 'btn btn-purple px-8 shadow-md';
+            }
+        };
 
         setInterval(() => {
             const now = new Date();
@@ -318,10 +403,8 @@
                 snapshot.forEach((docSnap) => {
                     const car = docSnap.data(), id = docSnap.id; 
                     total++;
-
                     const statusL = checkExpiry(car.expiryLicense);
                     const statusI = checkExpiry(car.expiryInsurance);
-                    
                     const isExpired = (statusL === "expired" || statusI === "expired");
                     const isExpiring = (statusL === "expiring" || statusI === "expiring");
 
@@ -455,6 +538,12 @@
             }
         };
         window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
+        
+        // دالة إضافية لفتح الأكورديون بشكل عام (للموظفين والسيارات)
+        window.toggleGenAccordion = (id) => {
+            const el = document.getElementById(id);
+            if(el) el.classList.toggle('hidden');
+        };
     </script>
     <script type="module" src="drivers.js"></script>
     <script type="module" src="employees.js"></script>
