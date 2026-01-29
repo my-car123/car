@@ -1,6 +1,8 @@
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDocs, serverTimestamp, getDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const db = getFirestore();
+const auth = getAuth();
 const driversRef = collection(db, "drivers");
 const historyRef = collection(db, "transfers");
 
@@ -46,7 +48,7 @@ window.switchDriverSubTab = (subTab) => {
     }
 };
 
-// 3. إضافة وتعديل وحذف العضو (مع أزرار الاتصال)
+// 3. إضافة وتعديل وحذف العضو
 window.addNewDriver = async () => {
     const name = document.getElementById('driverName').value.trim();
     const phone = toEn(document.getElementById('driverPhone').value.trim());
@@ -91,7 +93,7 @@ window.loadDrivers = () => {
 
 window.toggleDrAccordion = (id) => document.getElementById(`dr-content-${id}`)?.classList.toggle('hidden');
 
-// 4. الأرشيف الكامل (مع استعادة شكل اللوحة الإماراتي)
+// 4. الأرشيف الكامل (تعديل لإظهار القائم بالحركة)
 window.loadTransferHistory = () => {
     onSnapshot(query(historyRef, orderBy("actionDate", "desc")), (snapshot) => {
         const container = document.getElementById('historyCardsContainer');
@@ -124,9 +126,12 @@ window.loadTransferHistory = () => {
                             const parts = m.carPlate ? m.carPlate.split(' ') : ['-','-'];
                             return `
                             <div class="flex items-center justify-between border-b py-3 last:border-0">
-                                <div class="uae-plate scale-75 origin-right">
-                                    <div class="plate-code">${parts[1] || ''}</div>
-                                    <div class="plate-number font-mono">${parts[0] || ''}</div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="uae-plate scale-75 origin-right">
+                                        <div class="plate-code">${parts[1] || ''}</div>
+                                        <div class="plate-number font-mono">${parts[0] || ''}</div>
+                                    </div>
+                                    <div class="text-[9px] text-blue-600 font-bold">${m.adminName || ''}</div>
                                 </div>
                                 <div class="text-left"><p class="text-[10px] font-bold text-gray-500 font-mono">${toEn(date)}</p></div>
                             </div>`;
@@ -139,7 +144,7 @@ window.loadTransferHistory = () => {
 
 window.toggleHistoryAccordion = (id) => document.getElementById(`hist-content-${id}`)?.classList.toggle('hidden');
 
-// 5. استعادة جلب سجل حركة المركبة (الذي تعطل)
+// 5. سجل حركة المركبة (تعديل لإظهار القائم بالحركة)
 window.showCarHistory = async (carId) => {
     const content = document.getElementById('carHistoryContent');
     const modal = document.getElementById('carHistoryModal');
@@ -160,7 +165,11 @@ window.showCarHistory = async (carId) => {
             const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true, day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '...';
             return `
                 <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-green-500 flex justify-between items-center shadow-sm mb-2 inner-history-item" data-search="${h.driverName} ${date}">
-                    <div><p class="text-[10px] text-gray-400 mb-1 italic text-right">المستلم:</p><p class="font-bold text-blue-900">${h.driverName}</p></div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 mb-1 italic text-right">المستلم:</p>
+                        <p class="font-bold text-blue-900">${h.driverName}</p>
+                        <p class="text-[9px] text-blue-500 font-bold mt-1">${h.adminName || ''}</p>
+                    </div>
                     <div class="text-left"><p class="text-[10px] font-mono text-gray-600 bg-white px-2 py-1 rounded border shadow-sm">${toEn(date)}</p></div>
                 </div>`;
         }).join('');
@@ -176,7 +185,7 @@ window.filterInnerHistory = () => {
 
 window.closeCarHistoryModal = () => document.getElementById('carHistoryModal').classList.add('hidden');
 
-// 6. نقل العهدة
+// 6. نقل العهدة (تعديل جوهري لتسجيل اسم الآدمن)
 window.openAssignDriver = async (carId) => {
     currentCarId = carId;
     const select = document.getElementById('driverSelect');
@@ -190,14 +199,33 @@ window.openAssignDriver = async (carId) => {
 window.confirmAssignDriver = async () => {
     const selectedDriver = document.getElementById('driverSelect').value;
     if (!selectedDriver || !currentCarId) return alert("اختر العضو");
+
+    // منطق تحديد اسم الآدمن بناءً على ايميله
+    const userEmail = auth.currentUser ? auth.currentUser.email : "";
+    let adminDisplayName = "";
+    if (userEmail === "saad323m@gmail.com") adminDisplayName = "By:MOHAMED SAAD";
+    else if (userEmail === "n2.saad113@gmail.com") adminDisplayName = "By:MOHAMED SAAD_2";
+    else if (userEmail === "p.my123.car@gmail.com") adminDisplayName = "By:SHADI";
+    else adminDisplayName = "By: Unknown Admin";
+
     try {
         const carRef = doc(db, "cars", currentCarId);
         const carSnap = await getDoc(carRef);
         const carData = carSnap.data();
         if (carData.user === selectedDriver) return alert("العضو مستلم بالفعل");
+        
         await updateDoc(carRef, { user: selectedDriver });
-        await addDoc(historyRef, { carId: currentCarId, carPlate: (carData.plateNumber + " " + carData.plateCode), driverName: selectedDriver, actionDate: serverTimestamp() });
-        alert("تم النقل");
+        
+        // إضافة السجل مع حقل adminName الجديد
+        await addDoc(historyRef, { 
+            carId: currentCarId, 
+            carPlate: (carData.plateNumber + " " + carData.plateCode), 
+            driverName: selectedDriver, 
+            adminName: adminDisplayName, 
+            actionDate: serverTimestamp() 
+        });
+
+        alert("تم النقل بواسطة " + adminDisplayName);
         window.closeAssignModal();
     } catch (e) { alert("فشل النقل"); }
 };
