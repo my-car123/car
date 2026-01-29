@@ -246,31 +246,38 @@
             try {
                 if (editId) { 
                     await updateDoc(doc(db, "cars", editId), carData); 
+                    toggleModal('carModal');
                 } 
                 else {
-                    // التحقق من عدم التكرار (رقم اللوحة + الرمز)
-                    const q = query(collection(db, "cars"), 
-                        where("plateNumber", "==", plateNum), 
-                        where("plateCode", "==", plateCd)
-                    );
-                    const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
-                        alert("تنبيه: هذه السيارة مسجلة بالفعل في النظام برقم اللوحة والرمز المحدد.");
-                        return;
-                    }
-
+                    // التحقق "الذري" داخل معاملة Firestore لضمان عدم التكرار نهائياً
                     await runTransaction(db, async (transaction) => {
+                        const q = query(collection(db, "cars"), 
+                            where("plateNumber", "==", plateNum), 
+                            where("plateCode", "==", plateCd)
+                        );
+                        const existingDocs = await getDocs(q);
+                        
+                        if (!existingDocs.empty) {
+                            throw "duplicate"; // إيقاف المعاملة فوراً
+                        }
+
                         const counterRef = doc(db, "settings", "counters");
                         const counterDoc = await transaction.get(counterRef);
                         let nextId = counterDoc.exists() ? (counterDoc.data().lastId || 99) + 1 : 100;
+                        
                         transaction.set(counterRef, { lastId: nextId }, { merge: true });
                         carData.customId = "AL MASAOOD_" + nextId;
                         carData.createdAt = new Date();
-                        transaction.set(doc(collection(db, "cars")), carData);
+                        
+                        const newCarRef = doc(collection(db, "cars"));
+                        transaction.set(newCarRef, carData);
                     });
+                    toggleModal('carModal');
                 }
-                toggleModal('carModal');
-            } catch (err) { alert("خطأ في الحفظ"); }
+            } catch (err) { 
+                if (err === "duplicate") alert("⚠️ تنبيه: هذه المركبة مسجلة مسبقاً بنفس رقم اللوحة والرمز.");
+                else alert("خطأ في الحفظ"); 
+            }
         };
 
         function loadCars() {
@@ -350,7 +357,6 @@
                     تمت الطباعة بواسطة نظام المسعود في: ${new Date().toLocaleString('ar-EG')}
                 </div>
             </div>`;
-            
             setTimeout(() => { window.print(); }, 300);
         };
 
