@@ -1,4 +1,4 @@
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDocs, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDocs, serverTimestamp, getDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const db = getFirestore();
 const driversRef = collection(db, "drivers");
@@ -22,12 +22,11 @@ window.switchTab = (tabId) => {
     } else {
         btnCars.className = 'btn btn-gray px-8 shadow-md';
         btnDrivers.className = 'btn btn-blue px-8 shadow-md';
-        // الافتراضي عند فتح تبويب السائقين هو القائمة
         switchDriverSubTab('list');
     }
 };
 
-// 2. التبديل بين القائمة والأرشيف (التبويبات الداخلية)
+// 2. التبديل بين القائمة والأرشيف
 window.switchDriverSubTab = (subTab) => {
     const listContent = document.getElementById('driverListContent');
     const historyContent = document.getElementById('driverHistoryContent');
@@ -64,11 +63,11 @@ window.addNewDriver = async () => {
         });
         document.getElementById('driverName').value = "";
         document.getElementById('driverPhone').value = "";
-        alert("تمت الإضافة");
+        alert("تمت الإضافة بنجاح");
     } catch (e) { alert("خطأ في الحفظ"); }
 };
 
-// 4. عرض السائقين (بطاقات مطوية)
+// 4. عرض السائقين
 window.loadDrivers = () => {
     const q = query(driversRef, orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -107,39 +106,54 @@ window.toggleDrAccordion = (id) => {
     if(el) el.classList.toggle('hidden');
 };
 
-// 5. سجل الأرشفة (بطاقات مطوية)
+// 5. سجل الأرشفة (مجمع حسب السائق)
 window.loadTransferHistory = () => {
     const q = query(historyRef, orderBy("actionDate", "desc"));
     onSnapshot(q, (snapshot) => {
         const container = document.getElementById('historyCardsContainer');
         if(!container) return;
-        container.innerHTML = "";
         
         if (snapshot.empty) {
             container.innerHTML = "<p class='text-center text-gray-400'>لا توجد بيانات في الأرشيف حالياً</p>";
             return;
         }
 
-        snapshot.forEach((docSnap) => {
-            const h = docSnap.data();
-            const id = docSnap.id;
-            const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true}) : '...';
-            const parts = h.carPlate ? h.carPlate.split(' ') : ['-','-'];
+        const grouped = {};
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (!grouped[data.driverName]) grouped[data.driverName] = [];
+            grouped[data.driverName].push({ id: docSnap.id, ...data });
+        });
 
+        container.innerHTML = "";
+        Object.keys(grouped).forEach(driverName => {
+            const driverId = driverName.replace(/\s+/g, '-');
+            const moves = grouped[driverName];
+            
             const card = `
-                <div class="bg-white rounded-xl border border-gray-200 card-shadow overflow-hidden mb-2">
-                    <div onclick="toggleHistoryAccordion('${id}')" class="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center bg-white">
+                <div class="bg-white rounded-xl border border-gray-200 card-shadow overflow-hidden mb-3">
+                    <div onclick="toggleHistoryAccordion('${driverId}')" class="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center bg-blue-50/30">
                         <div class="text-right">
-                             <p class="font-bold text-blue-900 text-sm">المستلم: ${h.driverName}</p>
-                             <p class="text-[10px] text-gray-400 font-mono">${toEn(date)}</p>
+                             <p class="font-bold text-blue-900">المستلم: ${driverName}</p>
+                             <p class="text-xs text-gray-500">عدد الحركات: ${moves.length}</p>
                         </div>
-                        <span class="text-orange-500 text-xs font-bold">عرض اللوحة ▾</span>
+                        <span class="text-orange-500 text-xs font-bold">عرض السجل ▾</span>
                     </div>
-                    <div id="hist-content-${id}" class="hidden p-4 bg-orange-50/30 flex justify-center border-t">
-                        <div class="uae-plate">
-                            <div class="plate-code">${parts[1] || ''}</div>
-                            <div class="plate-number font-mono">${toEn(parts[0] || '')}</div>
-                        </div>
+                    <div id="hist-content-${driverId}" class="hidden p-4 bg-white border-t">
+                        ${moves.map(m => {
+                            const date = m.actionDate ? new Date(m.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true}) : '...';
+                            const parts = m.carPlate ? m.carPlate.split(' ') : ['-','-'];
+                            return `
+                            <div class="flex items-center justify-between border-b py-3 last:border-0">
+                                <div class="uae-plate scale-75 origin-right">
+                                    <div class="plate-code">${parts[1] || ''}</div>
+                                    <div class="plate-number font-mono">${toEn(parts[0] || '')}</div>
+                                </div>
+                                <div class="text-left">
+                                    <p class="text-[10px] font-bold text-gray-500 font-mono">${toEn(date)}</p>
+                                </div>
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
             container.innerHTML += card;
@@ -152,6 +166,46 @@ window.toggleHistoryAccordion = (id) => {
     if(el) el.classList.toggle('hidden');
 };
 
+// 6. عرض سجل حركات سيارة محددة (المودال الجديد)
+window.showCarHistory = async (carId) => {
+    const content = document.getElementById('carHistoryContent');
+    content.innerHTML = '<p class="text-center py-4">جاري تحميل السجل...</p>';
+    document.getElementById('carHistoryModal').classList.remove('hidden');
+
+    try {
+        const q = query(historyRef, where("carId", "==", carId), orderBy("actionDate", "desc"));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            content.innerHTML = '<div class="text-center py-8"><p class="text-gray-400 font-bold">لا يوجد سجل حركات لهذه المركبة</p></div>';
+            return;
+        }
+
+        let html = "";
+        snap.forEach(docSnap => {
+            const h = docSnap.data();
+            const date = h.actionDate ? new Date(h.actionDate.seconds * 1000).toLocaleString('en-GB', {hour12:true, day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '...';
+            html += `
+                <div class="bg-gray-50 p-3 rounded-lg border-r-4 border-purple-500 flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="text-[10px] text-gray-400 mb-1 italic">السائق المستلم:</p>
+                        <p class="font-bold text-blue-900">${h.driverName}</p>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-[10px] font-mono text-gray-600 bg-white px-2 py-1 rounded border shadow-sm">${toEn(date)}</p>
+                    </div>
+                </div>`;
+        });
+        content.innerHTML = html;
+    } catch (e) {
+        content.innerHTML = '<p class="text-red-500 text-center">خطأ في جلب البيانات</p>';
+    }
+};
+
+window.closeCarHistoryModal = () => {
+    document.getElementById('carHistoryModal').classList.add('hidden');
+};
+
 window.editDriver = async (id, oldName, oldPhone) => {
     const newName = prompt("تعديل الاسم:", oldName);
     const newPhone = prompt("تعديل الهاتف:", oldPhone);
@@ -161,7 +215,7 @@ window.editDriver = async (id, oldName, oldPhone) => {
 };
 
 window.deleteDriver = async (id) => {
-    if (confirm("هل أنت متأكد؟")) await deleteDoc(doc(db, "drivers", id));
+    if (confirm("هل أنت متأكد؟ سيتم حذف السائق نهائياً")) await deleteDoc(doc(db, "drivers", id));
 };
 
 window.openAssignDriver = async (carId) => {
@@ -176,7 +230,6 @@ window.openAssignDriver = async (carId) => {
 
 window.closeAssignModal = () => { document.getElementById('driverAssignModal').classList.add('hidden'); currentCarId = null; };
 
-// التحقق من المتعهد الحالي قبل النقل
 window.confirmAssignDriver = async () => {
     const selectedDriver = document.getElementById('driverSelect').value;
     if (!selectedDriver || !currentCarId) return alert("يرجى اختيار السائق");
@@ -185,9 +238,8 @@ window.confirmAssignDriver = async () => {
         const carSnap = await getDoc(doc(db, "cars", currentCarId));
         const carData = carSnap.data();
 
-        // التعديل المطلوب: التحقق من اسم السائق
         if (carData.user === selectedDriver) {
-            alert(`خطأ: السائق (${selectedDriver}) هو المتعهد الحالي لهذه السيارة بالفعل. لا يمكن التعهد مرتين لنفس المركبة.`);
+            alert(`خطأ: السائق (${selectedDriver}) هو المتعهد الحالي بالفعل.`);
             return;
         }
 
@@ -198,7 +250,7 @@ window.confirmAssignDriver = async () => {
             driverName: selectedDriver,
             actionDate: serverTimestamp()
         });
-        alert("تم نقل العهدة بنجاح");
+        alert("تم نقل العهدة وتسجيل الحركة في الأرشيف");
         window.closeAssignModal();
-    } catch (e) { alert("حدث خطأ"); }
+    } catch (e) { alert("حدث خطأ أثناء النقل"); }
 };
