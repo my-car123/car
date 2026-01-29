@@ -28,7 +28,8 @@
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
         .car-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
-        .alert-border { border: 3px solid #ef4444 !important; }
+        .alert-border { border: 3px solid #ef4444 !important; animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { border-color: #ef4444; } 50% { border-color: #fee2e2; } 100% { border-color: #ef4444; } }
         footer { margin-top: auto; background: white; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; font-weight: bold; color: #64748b; }
         @media print { body > * { display: none !important; } #printArea { display: block !important; width: 100% !important; } }
     </style>
@@ -66,6 +67,11 @@
     </nav>
 
     <main id="app" class="hidden flex-grow">
+        <div id="adminNotifications" class="hidden mb-6 bg-red-50 border-r-8 border-red-600 p-4 rounded-xl shadow-sm">
+            <h4 class="text-red-800 font-bold mb-2 flex items-center gap-2">⚠️ تنبيهات الإدارة (تحتاج متابعة):</h4>
+            <ul id="notificationsList" class="text-sm text-red-700 space-y-1"></ul>
+        </div>
+
         <section id="carsTab" class="tab-content">
             <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-blue-500">
@@ -77,14 +83,16 @@
                     <p id="expiryAlerts" class="text-3xl font-bold text-red-600 font-mono">0</p>
                 </div>
                 <button onclick="showCarsList()" class="bg-white p-6 rounded-xl card-shadow text-center border-t-4 border-green-500 hover:bg-green-50 transition-colors">
-                    <h3 class="text-green-600 mb-2 font-bold text-xl">عرض السيارات</h3>
-                    <p class="text-sm text-gray-500 font-mono font-bold italic">VIEW DATABASE</p>
+                    <h3 class="text-green-600 mb-2 font-bold text-xl">عرض قاعدة البيانات</h3>
+                    <p id="searchCountDisplay" class="text-sm text-gray-500 font-mono font-bold italic text-center">TOTAL RECORDS</p>
                 </button>
                 <button onclick="toggleModal('carModal')" class="btn btn-blue h-full flex items-center justify-center text-xl">إضافة سيارة جديدة</button>
             </section>
+
             <div id="carsContainer" class="hidden">
-                <div class="search-box mb-6">
-                    <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث برقم اللوحة، الرمز، أو اسم المالك..." class="border-2 border-blue-600">
+                <div class="search-box mb-6 relative">
+                    <input type="text" id="searchInput" onkeyup="filterCars()" placeholder="ابحث بالاسم، رقم اللوحة، الرمز، أو العضو المستلم..." class="border-2 border-blue-600 pr-12">
+                    <span class="absolute right-4 top-4 text-blue-600">🔍</span>
                 </div>
                 <div id="carsList" class="space-y-4"></div>
             </div>
@@ -109,8 +117,9 @@
             </div>
 
             <div id="driverHistoryContent" class="hidden">
-                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
-                    <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل الحركة  (الأرشيف)</h2>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500 mb-4">
+                   <input type="text" id="historySearchInput" onkeyup="filterHistory()" placeholder="بحث في الأرشيف (باسم العضو أو رقم اللوحة)..." class="border-2 border-orange-400 mb-4">
+                    <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل الحركة (الأرشيف)</h2>
                     <div id="historyCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -125,7 +134,8 @@
                 <h2 class="text-xl font-bold text-gray-800">سجل حركات المركبة</h2>
                 <button onclick="closeCarHistoryModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
             </div>
-            <div id="carHistoryContent" class="space-y-3 max-h-[60vh] overflow-y-auto p-2"></div>
+            <input type="text" id="innerHistorySearch" onkeyup="filterInnerHistory()" placeholder="فلترة السجل بالتاريخ أو الاسم..." class="!p-2 !text-sm mb-3 border-green-200">
+            <div id="carHistoryContent" class="space-y-3 max-h-[50vh] overflow-y-auto p-2"></div>
             <button onclick="closeCarHistoryModal()" class="btn btn-gray w-full mt-4">إغلاق</button>
         </div>
     </div>
@@ -294,15 +304,26 @@
         function loadCars() {
             onSnapshot(query(collection(db, "cars"), orderBy("createdAt", "desc")), (snapshot) => {
                 const list = document.getElementById('carsList');
+                const notifyBox = document.getElementById('adminNotifications');
+                const notifyList = document.getElementById('notificationsList');
                 if(!list) return;
+                
                 list.innerHTML = "";
+                notifyList.innerHTML = "";
                 let total = 0, alerts = 0;
+                
                 snapshot.forEach((docSnap) => {
                     const car = docSnap.data(), id = docSnap.id; total++;
                     const isExpiring = checkExpiry(car.expiryLicense) || checkExpiry(car.expiryInsurance);
-                    if (isExpiring) alerts++;
+                    
+                    if (isExpiring) {
+                        alerts++;
+                        notifyList.innerHTML += `<li>• سيارة ${car.ownerName} (${car.plateNumber}) قاربت ملكيتها/تأمينها على الانتهاء.</li>`;
+                    }
+
                     list.innerHTML += `
-                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" data-search="${car.ownerName} ${car.plateNumber}">
+                        <div class="car-card card-shadow ${isExpiring ? 'alert-border' : ''}" 
+                             data-search="${car.ownerName} ${car.plateNumber} ${car.plateCode} ${car.user || ''} ${car.customId}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
                                 <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
                                 <div class="uae-plate mb-2"><div class="plate-code">${car.plateCode}</div><div class="plate-number font-mono">${car.plateNumber}</div></div>
@@ -313,8 +334,8 @@
                                     <div><p class="text-xs text-gray-400">المستخدم الحالي</p><strong class="text-blue-700">${car.user || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">الإمارة</p><strong>${car.emirate || '-'}</strong></div>
                                     <div><p class="text-xs text-gray-400">نوع السيارة</p><strong>${car.type || '-'}</strong></div>
-                                    <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong class="font-mono">${car.expiryLicense}</strong></div>
-                                    <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
+                                    <div class="${checkExpiry(car.expiryLicense) ? 'text-red-600 font-bold' : ''}"><p class="text-xs text-gray-400">انتهاء الترخيص</p><strong class="font-mono">${car.expiryLicense}</strong></div>
+                                    <div class="${checkExpiry(car.expiryInsurance) ? 'text-red-600 font-bold' : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
                                     <div><p class="text-xs text-gray-400">سنة الصنع</p><strong class="font-mono">${car.year || '-'}</strong></div>
                                     <div class="col-span-2"><p class="text-xs text-gray-400">رقم القاعدة (VIN)</p><strong class="font-mono uppercase">${car.vin || '-'}</strong></div>
                                     <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || 'لا يوجد ملاحظات'}</p></div>
@@ -329,16 +350,25 @@
                             </div>
                         </div>`;
                 });
+
                 document.getElementById('totalCars').innerText = total;
                 document.getElementById('expiryAlerts').innerText = alerts;
+                document.getElementById('searchCountDisplay').innerText = `FOUND: ${total} RECORDS`;
+                
+                if (alerts > 0) notifyBox.classList.remove('hidden');
+                else notifyBox.classList.add('hidden');
             });
         }
 
         window.filterCars = () => {
             const term = document.getElementById('searchInput').value.toLowerCase();
+            let visibleCount = 0;
             document.querySelectorAll('.car-card').forEach(card => {
-                card.style.display = card.getAttribute('data-search').toLowerCase().includes(term) ? 'block' : 'none';
+                const isMatch = card.getAttribute('data-search').toLowerCase().includes(term);
+                card.style.display = isMatch ? 'block' : 'none';
+                if(isMatch) visibleCount++;
             });
+            document.getElementById('searchCountDisplay').innerText = `FOUND: ${visibleCount} RESULTS`;
         };
 
         window.instantPrint = (car) => {
