@@ -115,7 +115,7 @@
 
             <div id="driverHistoryContent" class="hidden">
                 <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
-                    <input type="text" id="historySearchInput" onkeyup="filterHistory()" placeholder="بحث في الأرشيف (باسم العضو أو رقم اللوحة)..." class="border-2 border-orange-400 mb-4">
+                    <input type="text" id="historySearchInput" placeholder="بحث في الأرشيف (باسم العضو أو رقم اللوحة)..." class="border-2 border-orange-400 mb-4">
                     <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل الحركة (الأرشيف)</h2>
                     <div id="historyCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
@@ -140,8 +140,14 @@
     <div id="driverAssignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 card-shadow">
             <h2 class="text-xl font-bold mb-4 text-blue-700 border-b pb-2 italic">Assign Recipient</h2>
-            <div class="mb-4"><label class="block mb-2 text-sm font-bold text-gray-600">اختر العضــو المستلم:</label><select id="driverSelect"></select></div>
-            <div class="flex gap-4"><button onclick="confirmAssignDriver()" class="btn btn-blue flex-1">تأكيد الاستلام</button><button onclick="closeAssignModal()" class="btn btn-gray flex-1">إلغاء</button></div>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-bold text-gray-600">اختر العضــو المستلم:</label>
+                <select id="driverSelect"></select>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="confirmAssignDriver()" class="btn btn-blue flex-1">تأكيد الاستلام</button>
+                <button onclick="closeAssignModal()" class="btn btn-gray flex-1">إلغاء</button>
+            </div>
         </div>
     </div>
 
@@ -292,12 +298,11 @@
             }
         };
 
-        // دالة فحص التاريخ المحسنة لتحقيق شروطك
         window.checkExpiry = (dateStr) => {
             const diffDays = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
-            if (diffDays < 0) return "expired"; // انتهت بالفعل
-            if (diffDays <= 15) return "expiring"; // ستنتهي قريباً
-            return "valid"; // سليمة
+            if (diffDays < 0) return "expired";
+            if (diffDays <= 15) return "expiring";
+            return "valid";
         };
 
         function loadCars() {
@@ -323,11 +328,11 @@
                     let borderStyle = "";
                     if (isExpired) {
                         alerts++;
-                        borderStyle = "border: 4px solid #dc2626 !important;"; // أحمر
+                        borderStyle = "border: 4px solid #dc2626 !important;";
                         notifyList.innerHTML += `<li class="text-red-700 font-bold">• انتباه: السيارة رقم (${car.plateNumber}) انتهت بالفعل!</li>`;
                     } else if (isExpiring) {
                         alerts++;
-                        borderStyle = "border: 4px solid #eab308 !important;"; // أصفر
+                        borderStyle = "border: 4px solid #eab308 !important;";
                         notifyList.innerHTML += `<li class="text-yellow-700 font-bold">• انتباه: هناك سيارة رقم (${car.plateNumber}) ستنتهي قريباً.</li>`;
                     }
 
@@ -365,7 +370,6 @@
                 
                 if(alerts > 0) {
                     notifyBox.classList.remove('hidden');
-                    // تلوين الصندوق بناءً على وجود حالة انتهاء فعلية
                     const hasExpired = snapshot.docs.some(d => checkExpiry(d.data().expiryLicense) === 'expired' || checkExpiry(d.data().expiryInsurance) === 'expired');
                     notifyBox.style.borderColor = hasExpired ? '#dc2626' : '#eab308';
                     notifyBox.style.backgroundColor = hasExpired ? '#fef2f2' : '#fffbeb';
