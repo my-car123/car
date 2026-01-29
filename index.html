@@ -55,14 +55,14 @@
             <div id="userProfile" class="hidden flex items-center gap-4">
                 <span id="userEmailDisplay" class="font-bold text-green-700"></span>
                 <button onclick="location.reload()" class="btn btn-green !p-2 px-4">تحديث ↻</button>
-                <button onclick="handleLogout()" class="btn btn-red !p-2 px-4">خروج</button>
+                <button onclick="handleLogout()" class="btn btn-red !p-2 px-4">خـروج</button>
             </div>
         </div>
     </header>
 
     <nav id="mainNav" class="hidden flex justify-center gap-4 mb-6">
         <button onclick="switchTab('carsTab')" id="btnCarsTab" class="btn btn-blue px-8 shadow-md">إدارة السيارات</button>
-        <button onclick="switchTab('driversTab')" id="btnDriversTab" class="btn btn-gray px-8 shadow-md">إدارة السائقين</button>
+        <button onclick="switchTab('driversTab')" id="btnDriversTab" class="btn btn-gray px-8 shadow-md">إدارة الأعضــاء</button>
     </nav>
 
     <main id="app" class="hidden flex-grow">
@@ -92,7 +92,7 @@
 
         <section id="driversTab" class="tab-content hidden">
             <div class="flex justify-center gap-2 mb-6">
-                <button onclick="switchDriverSubTab('list')" id="subTabListBtn" class="btn btn-blue flex-1 max-w-[200px]">قائمة السائقين</button>
+                <button onclick="switchDriverSubTab('list')" id="subTabListBtn" class="btn btn-blue flex-1 max-w-[200px]">قائمة الأعضــاء</button>
                 <button onclick="switchDriverSubTab('history')" id="subTabHistoryBtn" class="btn btn-gray flex-1 max-w-[200px]">سجل العهدة (الأرشيف)</button>
             </div>
 
@@ -100,9 +100,9 @@
                 <div class="bg-white p-6 rounded-xl card-shadow mb-8 border-t-4 border-blue-700">
                     <h2 class="text-2xl font-bold mb-4 text-blue-700 text-center">إضافة للسائق جديد</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <input type="text" id="driverName" placeholder="اسم السائق الكامل">
-                        <input type="text" id="driverPhone" placeholder="رقم الجوال / وسيلة الاتصال" class="font-mono">
-                        <button onclick="addNewDriver()" class="btn btn-blue text-lg">حفظ السائق</button>
+                        <input type="text" id="driverName" placeholder="اسم العضــو الكامل">
+                        <input type="text" id="driverPhone" placeholder="رقم الهاتف / وسيلة الاتصال" class="font-mono">
+                        <button onclick="addNewDriver()" class="btn btn-blue text-lg">حفظ العضــو</button>
                     </div>
                 </div>
                 <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
@@ -110,7 +110,7 @@
 
             <div id="driverHistoryContent" class="hidden">
                 <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
-                    <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل حركة العهدة (الأرشيف)</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل الحركة  (الأرشيف)</h2>
                     <div id="historyCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -133,7 +133,7 @@
     <div id="driverAssignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 card-shadow">
             <h2 class="text-xl font-bold mb-4 text-blue-700 border-b pb-2 italic">Assign Recipient</h2>
-            <div class="mb-4"><label class="block mb-2 text-sm font-bold text-gray-600">اختر السائق المستلم:</label><select id="driverSelect"></select></div>
+            <div class="mb-4"><label class="block mb-2 text-sm font-bold text-gray-600">اختر العضــو المستلم:</label><select id="driverSelect"></select></div>
             <div class="flex gap-4"><button onclick="confirmAssignDriver()" class="btn btn-blue flex-1">تأكيد الاستلام</button><button onclick="closeAssignModal()" class="btn btn-gray flex-1">إلغاء</button></div>
         </div>
     </div>
@@ -321,7 +321,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
-                                    <button onclick="showCarHistory('${id}')" class="btn btn-green flex-1 text-sm">📜 سجل الحركة</button>
+                                    <button onclick="showCarHistory('${id}')" class="btn btn-green flex-1 text-sm">📜 سجل حركةالعهدة</button>
                                     <button onclick="editCar('${id}')" class="btn btn-blue flex-1 text-sm">تعديل</button>
                                     <button onclick='instantPrint(${JSON.stringify(car)})' class="btn btn-gray flex-1 text-white text-sm">طباعة</button>
                                     <button onclick="deleteCar('${id}')" class="btn btn-red flex-1 text-sm">حذف</button>
