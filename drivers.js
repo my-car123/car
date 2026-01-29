@@ -17,12 +17,12 @@ window.switchTab = (tabId) => {
     const btnDrivers = document.getElementById('btnDriversTab');
 
     if(tabId === 'carsTab') {
-        btnCars.className = 'btn btn-blue px-8 shadow-md';
-        btnDrivers.className = 'btn btn-gray px-8 shadow-md';
+        if(btnCars) btnCars.className = 'btn btn-blue px-8 shadow-md';
+        if(btnDrivers) btnDrivers.className = 'btn btn-gray px-8 shadow-md';
     } else {
-        btnCars.className = 'btn btn-gray px-8 shadow-md';
-        btnDrivers.className = 'btn btn-blue px-8 shadow-md';
-        switchDriverSubTab('list');
+        if(btnCars) btnCars.className = 'btn btn-gray px-8 shadow-md';
+        if(btnDrivers) btnDrivers.className = 'btn btn-blue px-8 shadow-md';
+        window.switchDriverSubTab('list');
     }
 };
 
@@ -106,7 +106,7 @@ window.toggleDrAccordion = (id) => {
     if(el) el.classList.toggle('hidden');
 };
 
-// 5. سجل الأرشفة (مجمع حسب السائق)
+// 5. سجل الأرشفة
 window.loadTransferHistory = () => {
     const q = query(historyRef, orderBy("actionDate", "desc"));
     onSnapshot(q, (snapshot) => {
@@ -166,18 +166,18 @@ window.toggleHistoryAccordion = (id) => {
     if(el) el.classList.toggle('hidden');
 };
 
-// 6. عرض سجل حركات سيارة محددة (تم الإصلاح ليعمل بدون "فهرس" إضافي)
+// 6. عرض سجل حركات سيارة محددة (تم الإصلاح الجذري لمشكلة الـ Index والخطأ الظاهر بالصورة)
 window.showCarHistory = async (carId) => {
     const content = document.getElementById('carHistoryContent');
     const modal = document.getElementById('carHistoryModal');
     
     if(!content || !modal) return;
 
-    content.innerHTML = '<p class="text-center py-4 text-blue-600">جاري جلب السجل...</p>';
+    content.innerHTML = '<div class="text-center py-4"><span class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></span><p class="mt-2 text-blue-600">جاري جلب السجل...</p></div>';
     modal.classList.remove('hidden');
 
     try {
-        // نكتفي بفلترة carId فقط برمجياً لتجنب مشكلة الـ Index المطلوبة من Firebase
+        // تم استبدال الاستعلام المركب باستعلام بسيط لتجنب خطأ Firebase Index
         const q = query(historyRef, where("carId", "==", carId));
         const snap = await getDocs(q);
         
@@ -186,14 +186,17 @@ window.showCarHistory = async (carId) => {
             return;
         }
 
-        // تحويل البيانات لمصفوفة لترتيبها بالأحدث يدوياً
         let dataList = [];
         snap.forEach(docSnap => {
             dataList.push(docSnap.data());
         });
 
-        // ترتيب البيانات يدوياً بالأحدث
-        dataList.sort((a, b) => (b.actionDate?.seconds || 0) - (a.actionDate?.seconds || 0));
+        // الترتيب اليدوي لضمان السرعة وعدم الاعتماد على فهارس السيرفر
+        dataList.sort((a, b) => {
+            const timeA = a.actionDate ? a.actionDate.seconds : 0;
+            const timeB = b.actionDate ? b.actionDate.seconds : 0;
+            return timeB - timeA;
+        });
 
         let html = "";
         dataList.forEach(h => {
@@ -211,8 +214,12 @@ window.showCarHistory = async (carId) => {
         });
         content.innerHTML = html;
     } catch (e) {
-        console.error("Firebase Error:", e);
-        content.innerHTML = '<p class="text-red-500 text-center py-4 font-bold">حدث خطأ في جلب البيانات من السيرفر</p>';
+        console.error("Firebase Error Details:", e);
+        content.innerHTML = `
+            <div class="text-center py-4">
+                <p class="text-red-500 font-bold">⚠️ خطأ في جلب البيانات</p>
+                <button onclick="showCarHistory('${carId}')" class="mt-2 text-blue-600 underline">إعادة المحاولة</button>
+            </div>`;
     }
 };
 
