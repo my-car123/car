@@ -23,7 +23,7 @@
         .btn-green { background-color: #10b981; color: white; }
         .btn-purple { background-color: #7c3aed; color: white; }
         
-        /* لوحة الأرقام الإماراتية - حجم ثابت */
+        /* لوحة الأرقام الإماراتية - حجم ثابت للكود والرقم */
         .uae-plate {
             display: inline-flex;
             align-items: center;
@@ -38,7 +38,6 @@
         .plate-code {
             background: #dc2626;
             color: white;
-            padding: 0 12px;
             height: 100%;
             display: flex;
             align-items: center;
@@ -46,7 +45,10 @@
             font-weight: bold;
             font-size: 1.3rem;
             border-left: 2px solid #333;
-            min-width: 40px;
+            width: 50px;          /* عرض ثابت للكود */
+            min-width: 50px;      /* ضمان عدم التصغير */
+            flex-shrink: 0;       /* منع الانكماش */
+            padding: 0;           /* إزالة التأثيرات المتغيرة */
         }
         .plate-number {
             color: #1a1a1a;
@@ -55,7 +57,7 @@
             font-weight: 800;
             letter-spacing: 2px;
             min-width: 90px;
-            width: 90px;
+            width: 90px;          /* عرض ثابت للرقم */
             text-align: center;
             display: flex;
             align-items: center;
@@ -86,7 +88,7 @@
                     <button onclick="handleLogin()" id="loginBtn" class="btn btn-blue !p-2 px-6">دخول</button>
                 </div>
                 <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                    <input type="checkbox" id="rememberMe" class="w-4 h-4"> تذكرني
+                    <input type="checkbox" id="rememberMe" class="w-4 h-4" checked> تذكرني (جلسة ممتدة)
                 </label>
             </div>
             <div id="userProfile" class="hidden flex items-center gap-4">
@@ -188,6 +190,7 @@
 
     <footer>تطوير وتصميم: <span class="text-blue-600 font-mono">Mohamed Saad</span> &copy; 2026</footer>
 
+    <!-- Employee Modal -->
     <div id="employeeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[80]">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow border-t-8 border-purple-600 text-right">
             <h2 id="empModalTitle" class="text-2xl font-bold mb-6 text-purple-700 border-b pb-2 text-center">بيانات الموظف</h2>
@@ -224,6 +227,7 @@
         </div>
     </div>
 
+    <!-- Car History Modal -->
     <div id="carHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[70]">
         <div class="bg-white rounded-2xl w-full max-w-lg p-6 card-shadow border-t-8 border-green-600">
             <div class="flex justify-between items-center mb-4">
@@ -236,6 +240,7 @@
         </div>
     </div>
 
+    <!-- Driver Assign Modal -->
     <div id="driverAssignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 card-shadow">
             <h2 class="text-xl font-bold mb-4 text-blue-700 border-b pb-2 italic">Assign Recipient</h2>
@@ -250,6 +255,7 @@
         </div>
     </div>
 
+    <!-- Car Modal -->
     <div id="carModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow">
             <h2 id="modalTitle" class="text-3xl font-bold mb-6 text-blue-700 border-b pb-2">بيانات السيارة</h2>
@@ -328,9 +334,10 @@
             const remember = document.getElementById('rememberMe').checked;
             if(!email || !pass) return alert("يرجى إدخال البيانات");
             try {
+                // استخدام LocalPersistence لجلسة ممتدة (تذكرني)
                 await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
-            } catch (e) { alert("خطأ في الدخول"); }
+            } catch (e) { alert("خطأ في الدخول: " + e.message); }
         };
 
         window.handleLogout = () => signOut(auth);
@@ -517,7 +524,7 @@
                         .header-title { color: #2563eb; font-size: 2.5rem; margin-bottom: 5px; font-weight: bold; }
                         .system-id { font-weight: bold; font-size: 1.2rem; color: #64748b; margin-bottom: 20px; }
                         .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; }
-                        .plate-code { background: #dc2626; color: white; padding: 0 30px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-left: 4px solid #333; min-width: 70px; }
+                        .plate-code { background: #dc2626; color: white; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-left: 4px solid #333; width: 70px; min-width: 70px; flex-shrink: 0; padding: 0; }
                         .plate-number { color: #1a1a1a; padding: 0 35px; font-size: 3.5rem; font-weight: 800; letter-spacing: 3px; min-width: 160px; width: 160px; text-align: center; display: flex; align-items: center; justify-content: center; }
                         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.3rem; border-top: 2px solid #eee; padding-top: 20px; }
                         .info-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
@@ -554,6 +561,7 @@
         };
 
         window.deleteCar = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "cars", id)); };
+        
         window.editCar = async (id) => {
             const docSnap = await getDoc(doc(db, "cars", id));
             if(docSnap.exists()){
@@ -573,6 +581,7 @@
                 toggleModal('carModal');
             }
         };
+        
         window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
         
         window.toggleGenAccordion = (id) => {
