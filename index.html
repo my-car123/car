@@ -34,7 +34,7 @@
             height: 45px;
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            direction: ltr; /* ثبات الاتجاه */
+            direction: ltr; /* الاتجاه من اليسار لليمين للوحة */
         }
         .plate-code {
             height: 100%;
@@ -44,15 +44,17 @@
             font-weight: bold;
             font-size: 1.1rem;
             border-right: 2px solid #333;
-            width: 50px; min-width: 50px; max-width: 50px; /* عرض ثابت */
+            width: 50px;       /* عرض ثابت */
+            min-width: 50px;
+            max-width: 50px;
             flex-shrink: 0;
             padding: 0;
             color: white;
         }
         /* ألوان الإمارات */
-        .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; }
-        .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; }
-        .plate-ajman .plate-code { background: #006400; }
+        .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; } /* أحمر */
+        .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; } /* أزرق */
+        .plate-ajman .plate-code { background: #006400; } /* أخضر */
 
         .plate-number-box {
             display: flex;
@@ -61,7 +63,9 @@
             justify-content: center;
             background: white;
             height: 100%;
-            width: 100px; min-width: 100px; max-width: 100px; /* عرض ثابت */
+            width: 100px;      /* عرض ثابت */
+            min-width: 100px;
+            max-width: 100px;
         }
         .plate-number { color: #1a1a1a; font-size: 1.6rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
         .plate-emirate-name { font-size: 0.5rem; color: #555; text-transform: uppercase; margin-top: 2px; font-weight: bold; }
@@ -295,12 +299,12 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // إصلاح الجلسة: تفعيل الثبات قبل أي شيء
+        // === إصلاح تسجيل الدخول: تثبيت الجلسة ===
         setPersistence(auth, browserLocalPersistence).catch(console.error);
         
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
 
-        // دالة التصميم الموحدة (مهم جداً أن تكون هنا قبل استخدامها)
+        // === دوال مساعدة لتصميم اللوحة (مهمة جداً) ===
         const getPlateStyle = (emirate) => {
             const e = (emirate || "").trim();
             if (e.includes("الشارقة")) return { cls: "plate-sharjah", label: "Sharjah" };
@@ -313,7 +317,6 @@
             return { cls: "plate-abudhabi", label: "UAE" };
         };
 
-        // دالة توليد كود HTML للوحة (مهمة جداً لملف drivers.js)
         const renderPlateHTML = (car) => {
             const style = getPlateStyle(car.emirate);
             return `
@@ -326,6 +329,7 @@
             </div>`;
         };
 
+        // === التنقل والوقت ===
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
@@ -342,6 +346,7 @@
 
         setInterval(() => { const dt = document.getElementById('currentDateTime'); if(dt) dt.innerText = new Date().toLocaleString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }); }, 1000);
 
+        // === تسجيل الدخول ===
         window.handleLogin = async () => {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
@@ -370,6 +375,7 @@
             }
         });
 
+        // === السيارات ===
         window.showCarsList = () => document.getElementById('carsContainer').classList.toggle('hidden');
         window.toggleModal = (id) => { const m = document.getElementById(id); if(m) m.classList.toggle('hidden'); };
 
@@ -503,10 +509,6 @@
         };
         
         window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
-
-        // Employees Logic (Simple placeholders to avoid errors if file missing)
-        window.closeEmpModal = () => document.getElementById('employeeModal').classList.add('hidden');
-        window.filterEmployees = () => {};
         
     </script>
     <script type="module" src="drivers.js"></script>
