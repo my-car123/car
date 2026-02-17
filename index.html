@@ -23,7 +23,7 @@
         .btn-green { background-color: #10b981; color: white; }
         .btn-purple { background-color: #7c3aed; color: white; }
         
-        /* لوحة الأرقام الإماراتية - مقاسات ثابتة تماماً */
+        /* لوحة الأرقام الإماراتية - تصميم رسمي ثابت */
         .uae-plate {
             display: inline-flex;
             align-items: center;
@@ -34,10 +34,10 @@
             height: 45px;
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            direction: ltr; /* من اليسار لليمين ليتوافق مع شكل اللوحة الرسمي */
+            direction: ltr; /* الاتجاه من اليسار لليمين كما في الواقع */
         }
         
-        /* خانة الرمز (الكود) - عرض ثابت */
+        /* الجزء الملون (الرمز) - حجم ثابت */
         .plate-code {
             height: 100%;
             display: flex;
@@ -45,22 +45,22 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.1rem;
-            border-right: 2px solid #333;
+            border-right: 2px solid #333; /* الفاصل */
             
             width: 50px;       /* عرض ثابت */
-            min-width: 50px;   /* ضمان عدم التصغير */
-            max-width: 50px;   /* ضمان عدم التوسع */
+            min-width: 50px;
+            max-width: 50px;
             flex-shrink: 0;
             padding: 0;
             color: white;
         }
 
-        /* ألوان الإمارات */
+        /* ألوان الإمارات الرسمية */
         .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; } /* أحمر */
         .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; } /* أزرق */
         .plate-ajman .plate-code { background: #006400; } /* أخضر */
 
-        /* خانة الرقم - عرض ثابت */
+        /* خانة الرقم - حجم ثابت */
         .plate-number-box {
             display: flex;
             flex-direction: column;
@@ -69,11 +69,10 @@
             background: white;
             height: 100%;
             
-            width: 100px;      /* عرض ثابت يكفي لـ 5 أرقام */
-            min-width: 100px;  /* ضمان عدم التصغير */
-            max-width: 100px;  /* ضمان عدم التوسع */
+            width: 100px;      /* عرض ثابت */
+            min-width: 100px;
+            max-width: 100px;
         }
-        
         .plate-number {
             color: #1a1a1a;
             font-size: 1.6rem;
@@ -302,9 +301,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        // --- إعداد الجلسة الممتدة (الحل الجذري) ---
+        // نقوم بضبط الثبات على "تخزين محلي" بشكل افتراضي عند تحميل الصفحة
+        // هذا يضمن أن الجلسة تبقى مفتوحة حتى بعد إغلاق المتصفح.
+        setPersistence(auth, browserLocalPersistence).catch(console.error);
+        
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
 
-        // دالة لتحديد شكل واسم الإمارة
+        // دالة تحديد شكل اللوحة
         const getPlateStyle = (emirate) => {
             const e = (emirate || "").trim();
             if (e.includes("الشارقة")) return { cls: "plate-sharjah", label: "Sharjah" };
@@ -336,10 +341,15 @@
         window.handleLogin = async () => {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
-            const remember = document.getElementById('rememberMe').checked;
             if(!email || !pass) return alert("يرجى إدخال البيانات");
             try {
-                await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+                // لا حاجة لضبط الـ Persistence هنا لأننا ضبطنها أعلاه، لكن يمكن التبديل لجلسة مؤقتة إذا ألغى المستخدم التذكرني
+                const remember = document.getElementById('rememberMe').checked;
+                if (!remember) {
+                     await setPersistence(auth, browserSessionPersistence);
+                } else {
+                     await setPersistence(auth, browserLocalPersistence);
+                }
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (e) { alert("خطأ في الدخول: " + e.message); }
         };
@@ -351,13 +361,15 @@
             const mainNav = document.getElementById('mainNav');
             const loginSection = document.getElementById('loginSection');
             const userProfile = document.getElementById('userProfile');
-            if (user && allowedAdmins.includes(user.email)) {
+            
+            if (user && allowedAdmins.includes(user.email.toLowerCase())) {
                 appMain.classList.remove('hidden'); if(mainNav) mainNav.classList.remove('hidden');
                 loginSection.classList.add('hidden'); userProfile.classList.remove('hidden');
                 document.getElementById('userEmailDisplay').innerText = user.email;
                 loadCars();
             } else {
-                if(user) signOut(auth);
+                // إذا لم يكن مسجل دخول أو ليس أدمن، نعرض شاشة الدخول
+                // ملاحظة: لا نقوم بتسجيل خروج تلقائي هنا لتجنب مشاكل الحلقات، نكتفي بإخفاء المحتوى
                 appMain.classList.add('hidden'); if(mainNav) mainNav.classList.add('hidden');
                 loginSection.classList.remove('hidden'); userProfile.classList.add('hidden');
             }
