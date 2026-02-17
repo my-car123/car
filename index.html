@@ -23,7 +23,7 @@
         .btn-green { background-color: #10b981; color: white; }
         .btn-purple { background-color: #7c3aed; color: white; }
         
-        /* لوحة الأرقام الإماراتية - تصميم رسمي ثابت */
+        /* لوحة الأرقام الإماراتية - تصميم موحد وثابت */
         .uae-plate {
             display: inline-flex;
             align-items: center;
@@ -34,10 +34,8 @@
             height: 45px;
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            direction: ltr; /* الاتجاه من اليسار لليمين كما في الواقع */
+            direction: ltr; /* ثبات الاتجاه */
         }
-        
-        /* الجزء الملون (الرمز) - حجم ثابت */
         .plate-code {
             height: 100%;
             display: flex;
@@ -45,22 +43,17 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.1rem;
-            border-right: 2px solid #333; /* الفاصل */
-            
-            width: 50px;       /* عرض ثابت */
-            min-width: 50px;
-            max-width: 50px;
+            border-right: 2px solid #333;
+            width: 50px; min-width: 50px; max-width: 50px; /* عرض ثابت */
             flex-shrink: 0;
             padding: 0;
             color: white;
         }
+        /* ألوان الإمارات */
+        .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; }
+        .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; }
+        .plate-ajman .plate-code { background: #006400; }
 
-        /* ألوان الإمارات الرسمية */
-        .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; } /* أحمر */
-        .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; } /* أزرق */
-        .plate-ajman .plate-code { background: #006400; } /* أخضر */
-
-        /* خانة الرقم - حجم ثابت */
         .plate-number-box {
             display: flex;
             flex-direction: column;
@@ -68,26 +61,10 @@
             justify-content: center;
             background: white;
             height: 100%;
-            
-            width: 100px;      /* عرض ثابت */
-            min-width: 100px;
-            max-width: 100px;
+            width: 100px; min-width: 100px; max-width: 100px; /* عرض ثابت */
         }
-        .plate-number {
-            color: #1a1a1a;
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            line-height: 1;
-        }
-        .plate-emirate-name {
-            font-size: 0.5rem;
-            color: #555;
-            text-transform: uppercase;
-            margin-top: 2px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
+        .plate-number { color: #1a1a1a; font-size: 1.6rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
+        .plate-emirate-name { font-size: 0.5rem; color: #555; text-transform: uppercase; margin-top: 2px; font-weight: bold; }
         
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
@@ -166,6 +143,7 @@
                 <button onclick="switchDriverSubTab('list')" id="subTabListBtn" class="btn btn-blue flex-1 max-w-[200px]">قائمة الأعضــاء</button>
                 <button onclick="switchDriverSubTab('history')" id="subTabHistoryBtn" class="btn btn-gray flex-1 max-w-[200px]">سجل العهدة (الأرشيف)</button>
             </div>
+
             <div id="driverListContent">
                 <div class="bg-white p-6 rounded-xl card-shadow mb-8 border-t-4 border-blue-700">
                     <h2 class="text-2xl font-bold mb-4 text-blue-700 text-center">إضافة عضــو جديد</h2>
@@ -177,9 +155,10 @@
                 </div>
                 <div id="driversList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
             </div>
+
             <div id="driverHistoryContent" class="hidden">
                 <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
-                    <input type="text" id="historySearchInput" placeholder="بحث في الأرشيف..." class="border-2 border-orange-400 mb-4">
+                    <input type="text" id="historySearchInput" onkeyup="filterGlobalHistory()" placeholder="بحث في الأرشيف (باسم العضو أو رقم اللوحة)..." class="border-2 border-orange-400 mb-4">
                     <h2 class="text-2xl font-bold mb-4 text-orange-700 text-center">سجل الحركة (الأرشيف)</h2>
                     <div id="historyCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
@@ -198,12 +177,14 @@
                 </div>
                 <button onclick="document.getElementById('employeeModal').classList.remove('hidden')" class="btn btn-purple h-full flex items-center justify-center text-xl shadow-lg">إضافة موظف جديد +</button>
             </section>
+
             <div id="empNotificationsBox" class="hidden mb-6 bg-purple-50 border-r-8 border-purple-600 p-4 rounded-xl shadow-sm">
-                <h4 class="text-purple-800 font-bold mb-2">⚠️ تنبيهات المستندات:</h4>
+                <h4 class="text-purple-800 font-bold mb-2">⚠️ تنبيهات المستندات المنتهية:</h4>
                 <ul id="empNotificationsList" class="text-sm space-y-1"></ul>
             </div>
+
             <div class="search-box mb-6">
-                <input type="text" id="empSearchInput" onkeyup="filterEmployees()" placeholder="ابحث باسم الموظف..." class="border-2 border-purple-600">
+                <input type="text" id="empSearchInput" onkeyup="filterEmployees()" placeholder="ابحث باسم الموظف، رقم الملف، أو موقع العمل..." class="border-2 border-purple-600">
             </div>
             <div id="employeesList" class="space-y-4"></div>
         </section>
@@ -211,31 +192,49 @@
 
     <footer>تطوير وتصميم: <span class="text-blue-600 font-mono">Mohamed Saad</span> &copy; 2026</footer>
 
-    <!-- Modals -->
     <div id="employeeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[80]">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto card-shadow border-t-8 border-purple-600 text-right">
-            <h2 class="text-2xl font-bold mb-6 text-purple-700 border-b pb-2 text-center">بيانات الموظف</h2>
+            <h2 id="empModalTitle" class="text-2xl font-bold mb-6 text-purple-700 border-b pb-2 text-center">بيانات الموظف</h2>
             <form id="employeeForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <input type="hidden" id="empEditDocId">
                 <div><label class="block mb-2 font-bold">رقم الملف</label><input type="text" id="empFileNumber" placeholder="أدخل رقم الملف" required></div>
                 <div><label class="block mb-2 font-bold">اسم الموظف</label><input type="text" id="empName" placeholder="الاسم الكامل" required></div>
                 <div><label class="block mb-2 font-bold">الجنسية</label><input type="text" id="empNationality" placeholder="الجنسية"></div>
-                <div><label class="block mb-2 font-bold">الكفيل</label><input list="sponsorsList" id="empSponsor" placeholder="اختر أو اكتب اسم الكفيل">
-                    <datalist id="sponsorsList"><option value="احمد رحمه"><option value="ام جابر"><option value="جابر رحمه"><option value="مسعود رحمه"><option value="محمد رحمه"><option value="خالد رحمه"><option value="مريم رحمه"><option value="روضه رحمه"><option value="مجموعة رحمه المسعود"><option value="ستانفورد الطبي"></datalist>
+                <div>
+                    <label class="block mb-2 font-bold">الكفيل</label>
+                    <input list="sponsorsList" id="empSponsor" placeholder="اختر أو اكتب اسم الكفيل">
+                    <datalist id="sponsorsList">
+                        <option value="احمد رحمه">
+                        <option value="ام جابر">
+                        <option value="جابر رحمه">
+                        <option value="مسعود رحمه">
+                        <option value="محمد رحمه">
+                        <option value="خالد رحمه">
+                        <option value="مريم رحمه">
+                        <option value="روضه رحمه">
+                        <option value="مجموعة رحمه المسعود">
+                        <option value="ستانفورد الطبي">
+                    </datalist>
                 </div>
                 <div class="md:col-span-2"><label class="block mb-2 font-bold">مكان العمل</label><input type="text" id="empWorkLocation" placeholder="موقع العمل الحالي"></div>
                 <div class="bg-blue-50 p-3 rounded-lg"><label class="block mb-2 font-bold text-blue-700">انتهاء الإقامة</label><input type="date" id="residencyEnd" required></div>
                 <div class="bg-green-50 p-3 rounded-lg"><label class="block mb-2 font-bold text-green-700">انتهاء بطاقة العمل</label><input type="date" id="workCardEnd" required></div>
                 <div class="bg-red-50 p-3 rounded-lg md:col-span-2"><label class="block mb-2 font-bold text-red-700">انتهاء التأمين الطبي</label><input type="date" id="medicalEnd" required></div>
-                <div class="md:col-span-2 flex gap-4 mt-6"><button type="submit" class="btn btn-purple flex-1 text-lg">حفظ البيانات</button><button type="button" onclick="closeEmpModal()" class="btn btn-gray flex-1 text-lg">إلغاء</button></div>
+                <div class="md:col-span-2 flex gap-4 mt-6">
+                    <button type="submit" class="btn btn-purple flex-1 text-lg">حفظ البيانات</button>
+                    <button type="button" onclick="closeEmpModal()" class="btn btn-gray flex-1 text-lg">إلغاء</button>
+                </div>
             </form>
         </div>
     </div>
 
     <div id="carHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[70]">
         <div class="bg-white rounded-2xl w-full max-w-lg p-6 card-shadow border-t-8 border-green-600">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">سجل حركات المركبة</h2><button onclick="closeCarHistoryModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button></div>
-            <input type="text" id="innerHistorySearch" onkeyup="filterInnerHistory()" placeholder="فلترة السجل..." class="!p-2 !text-sm mb-3 border-green-200">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">سجل حركات المركبة</h2>
+                <button onclick="closeCarHistoryModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+            </div>
+            <input type="text" id="innerHistorySearch" onkeyup="filterInnerHistory()" placeholder="فلترة السجل بالتاريخ أو الاسم..." class="!p-2 !text-sm mb-3 border-green-200">
             <div id="carHistoryContent" class="space-y-3 max-h-[50vh] overflow-y-auto p-2"></div>
             <button onclick="closeCarHistoryModal()" class="btn btn-gray w-full mt-4">إغلاق</button>
         </div>
@@ -244,8 +243,14 @@
     <div id="driverAssignModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 card-shadow">
             <h2 class="text-xl font-bold mb-4 text-blue-700 border-b pb-2 italic">Assign Recipient</h2>
-            <div class="mb-4"><label class="block mb-2 text-sm font-bold text-gray-600">اختر العضــو المستلم:</label><select id="driverSelect"></select></div>
-            <div class="flex gap-4"><button onclick="confirmAssignDriver()" class="btn btn-blue flex-1">تأكيد الاستلام</button><button onclick="closeAssignModal()" class="btn btn-gray flex-1">إلغاء</button></div>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-bold text-gray-600">اختر العضــو المستلم:</label>
+                <select id="driverSelect"></select>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="confirmAssignDriver()" class="btn btn-blue flex-1">تأكيد الاستلام</button>
+                <button onclick="closeAssignModal()" class="btn btn-gray flex-1">إلغاء</button>
+            </div>
         </div>
     </div>
 
@@ -256,19 +261,7 @@
                 <input type="hidden" id="editDocId">
                 <div><label class="block mb-2 font-bold text-lg">رقم اللوحة</label><input type="text" id="plateNumber" class="font-mono" required></div>
                 <div><label class="block mb-2 font-bold text-lg">رمز اللوحة</label><input type="text" id="plateCode" required></div>
-                <div>
-                    <label class="block mb-2 font-bold text-lg">الإمارة</label>
-                    <input list="emirates" id="emirate" placeholder="اختر أو اكتب اسم الإمارة">
-                    <datalist id="emirates">
-                        <option value="أبوظبي">
-                        <option value="دبي">
-                        <option value="الشارقة">
-                        <option value="عجمان">
-                        <option value="أم القيوين">
-                        <option value="رأس الخيمة">
-                        <option value="الفجيرة">
-                    </datalist>
-                </div>
+                <div><label class="block mb-2 font-bold text-lg">الإمارة</label><input list="emirates" id="emirate"><datalist id="emirates"><option value="أبوظبي"><option value="دبي"><option value="الشارقة"><option value="عجمان"><option value="أم القيوين"><option value="رأس الخيمة"><option value="الفجيرة"></datalist></div>
                 <div><label class="block mb-2 font-bold text-lg">اسم المالك</label><input type="text" id="ownerName" required></div>
                 <div><label class="block mb-2 font-bold text-lg">المستخدم</label><input type="text" id="userField"></div>
                 <div><label class="block mb-2 font-bold text-lg">نوع السيارة</label><input type="text" id="type"></div>
@@ -287,7 +280,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, runTransaction, getDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvrNKiue6lIvJVkgFXWwiYMEY3rWdmj4g",
@@ -302,14 +295,12 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // --- إعداد الجلسة الممتدة (الحل الجذري) ---
-        // نقوم بضبط الثبات على "تخزين محلي" بشكل افتراضي عند تحميل الصفحة
-        // هذا يضمن أن الجلسة تبقى مفتوحة حتى بعد إغلاق المتصفح.
+        // إصلاح الجلسة: تفعيل الثبات قبل أي شيء
         setPersistence(auth, browserLocalPersistence).catch(console.error);
         
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
 
-        // دالة تحديد شكل اللوحة
+        // دالة التصميم الموحدة (مهم جداً أن تكون هنا قبل استخدامها)
         const getPlateStyle = (emirate) => {
             const e = (emirate || "").trim();
             if (e.includes("الشارقة")) return { cls: "plate-sharjah", label: "Sharjah" };
@@ -320,6 +311,19 @@
             if (e.includes("الفجيرة")) return { cls: "plate-fujairah", label: "Fujairah" };
             if (e.includes("أم القيوين")) return { cls: "plate-uaq", label: "Umm Al Quwain" };
             return { cls: "plate-abudhabi", label: "UAE" };
+        };
+
+        // دالة توليد كود HTML للوحة (مهمة جداً لملف drivers.js)
+        const renderPlateHTML = (car) => {
+            const style = getPlateStyle(car.emirate);
+            return `
+            <div class="uae-plate ${style.cls}">
+                <div class="plate-code">${car.plateCode || '-'}</div>
+                <div class="plate-number-box">
+                    <div class="plate-number font-mono">${car.plateNumber || '-'}</div>
+                    <div class="plate-emirate-name">${style.label}</div>
+                </div>
+            </div>`;
         };
 
         window.switchTab = (tabId) => {
@@ -342,16 +346,8 @@
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
             if(!email || !pass) return alert("يرجى إدخال البيانات");
-            try {
-                // لا حاجة لضبط الـ Persistence هنا لأننا ضبطنها أعلاه، لكن يمكن التبديل لجلسة مؤقتة إذا ألغى المستخدم التذكرني
-                const remember = document.getElementById('rememberMe').checked;
-                if (!remember) {
-                     await setPersistence(auth, browserSessionPersistence);
-                } else {
-                     await setPersistence(auth, browserLocalPersistence);
-                }
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (e) { alert("خطأ في الدخول: " + e.message); }
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (e) { alert("خطأ في الدخول: " + e.message); }
         };
 
         window.handleLogout = () => signOut(auth);
@@ -368,8 +364,7 @@
                 document.getElementById('userEmailDisplay').innerText = user.email;
                 loadCars();
             } else {
-                // إذا لم يكن مسجل دخول أو ليس أدمن، نعرض شاشة الدخول
-                // ملاحظة: لا نقوم بتسجيل خروج تلقائي هنا لتجنب مشاكل الحلقات، نكتفي بإخفاء المحتوى
+                if(user) signOut(auth);
                 appMain.classList.add('hidden'); if(mainNav) mainNav.classList.add('hidden');
                 loginSection.classList.remove('hidden'); userProfile.classList.add('hidden');
             }
@@ -442,19 +437,11 @@
                     if (isExpired) { alerts++; borderStyle = "border: 4px solid #dc2626 !important;"; notifyList.innerHTML += `<li class="text-red-700 font-bold">• انتهت: ${car.plateNumber}</li>`; }
                     else if (isExpiring) { alerts++; borderStyle = "border: 4px solid #eab308 !important;"; notifyList.innerHTML += `<li class="text-yellow-700 font-bold">• قرب انتهاء: ${car.plateNumber}</li>`; }
 
-                    const plateStyle = getPlateStyle(car.emirate);
-
                     list.innerHTML += `
                         <div class="car-card card-shadow" style="${borderStyle}" data-search="${car.ownerName} ${car.plateNumber} ${car.user}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
                                 <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
-                                <div class="uae-plate ${plateStyle.cls} mb-2">
-                                    <div class="plate-code">${car.plateCode}</div>
-                                    <div class="plate-number-box">
-                                        <div class="plate-number font-mono">${car.plateNumber}</div>
-                                        <div class="plate-emirate-name">${plateStyle.label}</div>
-                                    </div>
-                                </div>
+                                ${renderPlateHTML(car)}
                                 <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
                             </div>
                             <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
@@ -466,7 +453,6 @@
                                     <div class="${statusI === 'expired' ? 'text-red-600' : ''}"><p class="text-xs text-gray-400">انتهاء التأمين</p><strong class="font-mono">${car.expiryInsurance}</strong></div>
                                     <div><p class="text-xs text-gray-400">السنة</p><strong class="font-mono">${car.year || '-'}</strong></div>
                                     <div class="col-span-2"><p class="text-xs text-gray-400">VIN</p><strong class="font-mono uppercase">${car.vin || '-'}</strong></div>
-                                    <div class="col-span-full border-t pt-2 mt-2"><p class="text-xs text-gray-400">ملاحظات</p><p class="text-sm font-bold text-gray-700">${car.notes || '-'}</p></div>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     <button onclick="openAssignDriver('${id}')" class="btn bg-orange-500 text-white flex-1 text-sm">تبديل العهدة</button>
@@ -489,50 +475,8 @@
         window.instantPrint = (car) => {
             const pWin = window.open('', '', 'width=900,height=900');
             const pStyle = getPlateStyle(car.emirate);
-            const printCSS = `
-                body { font-family: Arial, sans-serif; direction: rtl; text-align: center; padding: 20px; color: #1e293b; }
-                .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; }
-                .header-title { color: #2563eb; font-size: 2.5rem; font-weight: bold; }
-                .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; direction: ltr; }
-                .plate-code { height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-right: 4px solid #333; width: 80px; min-width: 80px; flex-shrink: 0; padding: 0; color: white; }
-                .plate-number-box { display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; height: 100%; width: 180px; min-width: 180px; }
-                .plate-number { font-size: 3.5rem; font-weight: 800; }
-                .plate-emirate-name { font-size: 1rem; color: #555; text-transform: uppercase; margin-top: 5px; font-weight: bold; }
-                .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; }
-                .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; }
-                .plate-ajman .plate-code { background: #006400; }
-                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.3rem; border-top: 2px solid #eee; padding-top: 20px; }
-                .info-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; } .info-item strong { color: #2563eb; margin-left: 10px; }
-                .footer-note { margin-top: 40px; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; }
-            `;
-
-            pWin.document.write(`
-                <html><head><title>طباعة</title><style>${printCSS}</style></head>
-                <body>
-                    <div class="print-card">
-                        <div class="header-title">نظام ادارة السيارات</div>
-                        <div style="font-weight: bold; font-size: 1.2rem; color: #64748b; margin-bottom: 20px;">ID: ${car.customId}</div>
-                        <div class="uae-plate ${pStyle.cls}">
-                            <div class="plate-code">${car.plateCode}</div>
-                            <div class="plate-number-box">
-                                <div class="plate-number">${car.plateNumber}</div>
-                                <div class="plate-emirate-name">${pStyle.label}</div>
-                            </div>
-                        </div>
-                        <div class="info-grid">
-                            <div class="info-item"><strong>المالك:</strong> ${car.ownerName}</div>
-                            <div class="info-item"><strong>المستخدم:</strong> ${car.user || '-'}</div>
-                            <div class="info-item"><strong>الإمارة:</strong> ${car.emirate || '-'}</div>
-                            <div class="info-item"><strong>النوع:</strong> ${car.type || '-'}</div>
-                            <div class="info-item" style="color: #dc2626;"><strong>انهاء الترخيص:</strong> ${car.expiryLicense}</div>
-                            <div class="info-item" style="color: #dc2626;"><strong>انهاء التأمين:</strong> ${car.expiryInsurance}</div>
-                            <div style="grid-column: span 2; text-align: center; font-family: monospace;"><strong>VIN:</strong> ${car.vin || '-'}</div>
-                        </div>
-                        <div class="footer-note"><span>تاريخ الطباعة: ${new Date().toLocaleString('en-GB')}</span><span>By: system operator</span></div>
-                    </div>
-                    <script>window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };<\/script>
-                </body></html>
-            `);
+            const printCSS = `body { font-family: Arial, sans-serif; direction: rtl; text-align: center; padding: 20px; color: #1e293b; } .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; } .header-title { color: #2563eb; font-size: 2.5rem; font-weight: bold; } .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; direction: ltr; } .plate-code { height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-right: 4px solid #333; width: 80px; min-width: 80px; flex-shrink: 0; padding: 0; color: white; } .plate-number-box { display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; height: 100%; width: 180px; min-width: 180px; } .plate-number { font-size: 3.5rem; font-weight: 800; } .plate-emirate-name { font-size: 1rem; color: #555; text-transform: uppercase; margin-top: 5px; font-weight: bold; } .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; } .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; } .plate-ajman .plate-code { background: #006400; } .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; margin-top: 30px; font-size: 1.3rem; border-top: 2px solid #eee; padding-top: 20px; } .info-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; } .info-item strong { color: #2563eb; margin-left: 10px; } .footer-note { margin-top: 40px; font-size: 0.9rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; }`;
+            pWin.document.write(`<html><head><title>طباعة</title><style>${printCSS}</style></head><body><div class="print-card"><div class="header-title">نظام ادارة السيارات</div><div style="font-weight: bold; font-size: 1.2rem; color: #64748b; margin-bottom: 20px;">ID: ${car.customId}</div><div class="uae-plate ${pStyle.cls}"><div class="plate-code">${car.plateCode}</div><div class="plate-number-box"><div class="plate-number">${car.plateNumber}</div><div class="plate-emirate-name">${pStyle.label}</div></div></div><div class="info-grid"><div class="info-item"><strong>المالك:</strong> ${car.ownerName}</div><div class="info-item"><strong>المستخدم:</strong> ${car.user || '-'}</div><div class="info-item"><strong>الإمارة:</strong> ${car.emirate || '-'}</div><div class="info-item"><strong>النوع:</strong> ${car.type || '-'}</div><div class="info-item" style="color: #dc2626;"><strong>انهاء الترخيص:</strong> ${car.expiryLicense}</div><div class="info-item" style="color: #dc2626;"><strong>انهاء التأمين:</strong> ${car.expiryInsurance}</div><div style="grid-column: span 2; text-align: center; font-family: monospace;"><strong>VIN:</strong> ${car.vin || '-'}</div></div><div class="footer-note"><span>تاريخ الطباعة: ${new Date().toLocaleString('en-GB')}</span><span>By: system operator</span></div></div><script>window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };<\/script></body></html>`);
             pWin.document.close();
         };
 
@@ -559,7 +503,11 @@
         };
         
         window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
-        window.toggleGenAccordion = (id) => { const el = document.getElementById(id); if(el) el.classList.toggle('hidden'); };
+
+        // Employees Logic (Simple placeholders to avoid errors if file missing)
+        window.closeEmpModal = () => document.getElementById('employeeModal').classList.add('hidden');
+        window.filterEmployees = () => {};
+        
     </script>
     <script type="module" src="drivers.js"></script>
     <script type="module" src="employees.js"></script>
