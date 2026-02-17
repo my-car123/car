@@ -23,7 +23,7 @@
         .btn-green { background-color: #10b981; color: white; }
         .btn-purple { background-color: #7c3aed; color: white; }
         
-        /* لوحة الأرقام الإماراتية الرسمية */
+        /* لوحة الأرقام الإماراتية - مقاسات ثابتة تماماً */
         .uae-plate {
             display: inline-flex;
             align-items: center;
@@ -34,10 +34,10 @@
             height: 45px;
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            direction: ltr; /* الالتزام بالواقع: من اليسار لليمين */
+            direction: ltr; /* من اليسار لليمين ليتوافق مع شكل اللوحة الرسمي */
         }
         
-        /* الشريط الملون (الرمز) */
+        /* خانة الرمز (الكود) - عرض ثابت */
         .plate-code {
             height: 100%;
             display: flex;
@@ -45,29 +45,35 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.1rem;
-            border-right: 2px solid #333; /* الفاصل بين الرمز والرقم */
-            width: 45px;           /* عرض ثابت */
-            min-width: 45px;
+            border-right: 2px solid #333;
+            
+            width: 50px;       /* عرض ثابت */
+            min-width: 50px;   /* ضمان عدم التصغير */
+            max-width: 50px;   /* ضمان عدم التوسع */
             flex-shrink: 0;
             padding: 0;
             color: white;
         }
 
-        /* ألوان الإمارات الرسمية */
+        /* ألوان الإمارات */
         .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; } /* أحمر */
         .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; } /* أزرق */
         .plate-ajman .plate-code { background: #006400; } /* أخضر */
 
-        /* خانة الرقم */
+        /* خانة الرقم - عرض ثابت */
         .plate-number-box {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 0 15px;
             background: white;
             height: 100%;
+            
+            width: 100px;      /* عرض ثابت يكفي لـ 5 أرقام */
+            min-width: 100px;  /* ضمان عدم التصغير */
+            max-width: 100px;  /* ضمان عدم التوسع */
         }
+        
         .plate-number {
             color: #1a1a1a;
             font-size: 1.6rem;
@@ -84,7 +90,6 @@
             letter-spacing: 0.5px;
         }
         
-        /* تنسيقات عامة */
         .accordion-content { display: none; }
         .accordion-content.open { display: block; }
         .car-card, .emp-card { border: 2px solid #1b60f5 !important; background-color: white; border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
@@ -299,16 +304,17 @@
         const auth = getAuth(app);
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
 
-        // دالة مساعدة لتحديد كلاسات اللوحة واسم الإمارة
+        // دالة لتحديد شكل واسم الإمارة
         const getPlateStyle = (emirate) => {
             const e = (emirate || "").trim();
-            if (e.includes("الشارقة") || e.includes("رأس الخيمة")) return { cls: "plate-sharjah", label: e.includes("الشارقة") ? "Sharjah" : "Ras Al Khaimah" };
+            if (e.includes("الشارقة")) return { cls: "plate-sharjah", label: "Sharjah" };
+            if (e.includes("رأس الخيمة")) return { cls: "plate-rak", label: "Ras Al Khaimah" };
             if (e.includes("عجمان")) return { cls: "plate-ajman", label: "Ajman" };
             if (e.includes("أبوظبي")) return { cls: "plate-abudhabi", label: "Abu Dhabi" };
             if (e.includes("دبي")) return { cls: "plate-dubai", label: "Dubai" };
             if (e.includes("الفجيرة")) return { cls: "plate-fujairah", label: "Fujairah" };
             if (e.includes("أم القيوين")) return { cls: "plate-uaq", label: "Umm Al Quwain" };
-            return { cls: "plate-abudhabi", label: "UAE" }; // Default
+            return { cls: "plate-abudhabi", label: "UAE" };
         };
 
         window.switchTab = (tabId) => {
@@ -424,15 +430,12 @@
                     if (isExpired) { alerts++; borderStyle = "border: 4px solid #dc2626 !important;"; notifyList.innerHTML += `<li class="text-red-700 font-bold">• انتهت: ${car.plateNumber}</li>`; }
                     else if (isExpiring) { alerts++; borderStyle = "border: 4px solid #eab308 !important;"; notifyList.innerHTML += `<li class="text-yellow-700 font-bold">• قرب انتهاء: ${car.plateNumber}</li>`; }
 
-                    // استدعاء دالة التنسيق
                     const plateStyle = getPlateStyle(car.emirate);
 
                     list.innerHTML += `
                         <div class="car-card card-shadow" style="${borderStyle}" data-search="${car.ownerName} ${car.plateNumber} ${car.user}">
                             <div onclick="toggleAccordion('${id}')" class="p-5 flex flex-col items-center cursor-pointer hover:bg-gray-50 border-b">
                                 <span class="text-blue-600 font-bold mb-2 text-sm font-mono">${car.customId}</span>
-                                
-                                <!-- اللوحة الديناميكية -->
                                 <div class="uae-plate ${plateStyle.cls} mb-2">
                                     <div class="plate-code">${car.plateCode}</div>
                                     <div class="plate-number-box">
@@ -440,8 +443,6 @@
                                         <div class="plate-emirate-name">${plateStyle.label}</div>
                                     </div>
                                 </div>
-                                <!-- نهاية اللوحة -->
-
                                 <div class="text-lg font-bold text-gray-800">${car.ownerName}</div>
                             </div>
                             <div id="content-${id}" class="accordion-content p-6 bg-blue-50/30">
@@ -476,17 +477,15 @@
         window.instantPrint = (car) => {
             const pWin = window.open('', '', 'width=900,height=900');
             const pStyle = getPlateStyle(car.emirate);
-            // بناء CSS للطباعة ديناميكياً
             const printCSS = `
                 body { font-family: Arial, sans-serif; direction: rtl; text-align: center; padding: 20px; color: #1e293b; }
                 .print-card { border: 10px double #2563eb; padding: 30px; border-radius: 15px; }
                 .header-title { color: #2563eb; font-size: 2.5rem; font-weight: bold; }
                 .uae-plate { display: inline-flex; align-items: center; border: 4px solid #333; border-radius: 10px; background: white; overflow: hidden; height: 80px; margin: 20px 0; direction: ltr; }
-                .plate-code { height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-right: 4px solid #333; width: 70px; min-width: 70px; flex-shrink: 0; padding: 0; color: white; }
-                .plate-number-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 35px; background: white; height: 100%; }
+                .plate-code { height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2.2rem; border-right: 4px solid #333; width: 80px; min-width: 80px; flex-shrink: 0; padding: 0; color: white; }
+                .plate-number-box { display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; height: 100%; width: 180px; min-width: 180px; }
                 .plate-number { font-size: 3.5rem; font-weight: 800; }
                 .plate-emirate-name { font-size: 1rem; color: #555; text-transform: uppercase; margin-top: 5px; font-weight: bold; }
-                /* ألوان الطباعة */
                 .plate-abudhabi .plate-code, .plate-dubai .plate-code, .plate-fujairah .plate-code, .plate-uaq .plate-code { background: #DC143C; }
                 .plate-sharjah .plate-code, .plate-rak .plate-code { background: #0047AB; }
                 .plate-ajman .plate-code { background: #006400; }
