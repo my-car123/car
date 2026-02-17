@@ -304,7 +304,7 @@
         
         const allowedAdmins = ["saad323m@gmail.com", "n2.saad113@gmail.com", "p.my123.car@gmail.com"];
 
-        // === دوال مساعدة لتصميم اللوحة (مهمة جداً) ===
+        // === دوال مساعدة لتصميم اللوحة ===
         const getPlateStyle = (emirate) => {
             const e = (emirate || "").trim();
             if (e.includes("الشارقة")) return { cls: "plate-sharjah", label: "Sharjah" };
@@ -379,6 +379,21 @@
         window.showCarsList = () => document.getElementById('carsContainer').classList.toggle('hidden');
         window.toggleModal = (id) => { const m = document.getElementById(id); if(m) m.classList.toggle('hidden'); };
 
+        // === دالة فتح الأكورديون (للسيارات) ===
+        window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
+        
+        // === دالة فتح الأكورديون العامة (للموظفين - كانت مفقودة) ===
+        window.toggleGenAccordion = (id) => {
+            const el = document.getElementById(id);
+            if(el) el.classList.toggle('hidden');
+        };
+
+        // دالة فحص الانتهاء (مستخدمة في الموظفين والسيارات)
+        window.checkExpiry = (dateStr) => {
+            const diffDays = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+            if (diffDays < 0) return "expired"; if (diffDays <= 15) return "expiring"; return "valid";
+        };
+
         document.getElementById('carForm').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editDocId').value;
@@ -415,11 +430,6 @@
                     toggleModal('carModal');
                 }
             } catch (err) { if (err === "duplicate") alert("⚠️ تنبيه: هذه المركبة مسجلة مسبقاً."); else alert("خطأ في الحفظ"); }
-        };
-
-        window.checkExpiry = (dateStr) => {
-            const diffDays = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
-            if (diffDays < 0) return "expired"; if (diffDays <= 15) return "expiring"; return "valid";
         };
 
         function loadCars() {
@@ -507,8 +517,6 @@
                 toggleModal('carModal');
             }
         };
-        
-        window.toggleAccordion = (id) => document.getElementById(`content-${id}`).classList.toggle('open');
         
     </script>
     <script type="module" src="drivers.js"></script>
